@@ -3429,7 +3429,7 @@ GameObject:
   - component: {fileID: 6189998729650254418}
   m_Layer: 0
   m_Name: spider
-  m_TagString: EyeCorner
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

@@ -2085,56 +2085,6 @@ Transform:
   - {fileID: 772468961}
   m_Father: {fileID: 1407858543}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &319402344
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 319402345}
-  - component: {fileID: 319402346}
-  m_Layer: 0
-  m_Name: wall_decoration_spawner
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &319402345
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 319402344}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -80.75583, y: -2.6709461, z: 252.19551}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &319402346
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 319402344}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3309ed3e09b17d24c9532494896cd3d6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  framePrefab: {fileID: 919132149155446097, guid: 6503bd9de6b8ca4449a37aa93017ad6e, type: 3}
-  spawnTimer: 1
-  offset: 0.01
-  minEdgeDistance: 0.1
-  spawnLabels: 69
-  maxFrames: 30
 --- !u!1 &328713787 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 113768, guid: 126d619cf4daa52469682f85c1378b4a, type: 3}
@@ -3251,11 +3201,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cubePrefab: {fileID: 6643269869201270357, guid: 1eddc956c402847479601a85a82b389f, type: 3}
   wallPrefab: {fileID: 919132149155446097, guid: 6503bd9de6b8ca4449a37aa93017ad6e, type: 3}
-  spawnTimer: 1
-  nb_frames: 5
+  footballPrefab: {fileID: 919132149155446097, guid: d245cffe6b30cbc4db728b12dfe63123, type: 3}
+  spawnTimer: 3
+  nb_frames: 2
+  spawnFootball: 1
   minEdgeDistance: 0
   spawnLabels: 1
   spawnLabelsWall: 4
+  spawnLabelsFootball: 1
+  avoid: 6968
 --- !u!1 &517424773
 GameObject:
   m_ObjectHideFlags: 0
@@ -11890,4 +11844,3 @@ SceneRoots:
   - {fileID: 1632495872}
   - {fileID: 1856966467}
   - {fileID: 630858148}
-  - {fileID: 319402345}
