@@ -9,7 +9,7 @@ public class SpawnThings : MonoBehaviour
     public GameObject wallPrefab; // truc qu'on fait spawn aux murs
     public GameObject footballPrefab; // babyfoot a faire spawn
     public GameObject BoardGames; // jeux de société à faire spawn
-    public GameObject porteIFMS; // porte à faire spawn
+    public GameObject porteIFMS; //porte a faire spawn
 
     public float spawnTimer = 0.5f;
     private float timer;
@@ -24,8 +24,8 @@ public class SpawnThings : MonoBehaviour
     public MRUKAnchor.SceneLabels spawnLabelsWall;
     public MRUKAnchor.SceneLabels spawnLabelsFootball;
     public MRUKAnchor.SceneLabels avoid; // labels à éviter pour le spawn du babyfoot
-    public MRUKAnchor.SceneLabels spawnLabelsBoardGames; 
-    public MRUKAnchor.SceneLabels spawnLabelPorteIFMS; // label de la surface de la porte à faire spawn
+    public MRUKAnchor.SceneLabels spawnLabelsBoardGames;
+    public MRUKAnchor.SceneLabels spawnLabelsPorteIFMS;
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -49,6 +49,7 @@ public class SpawnThings : MonoBehaviour
         }
         SpawnFootball();
         SpawnBoardGames();
+        SpawnPorteIFMS();
     }
 
     // Update is called once per frame
@@ -87,7 +88,17 @@ public class SpawnThings : MonoBehaviour
         Quaternion rotation = Quaternion.LookRotation(norm) * Quaternion.Euler(0, 90, 0); // Calcule la rotation en fonction de la normale et ajoute une rotation de 90 degrés en Y
         Instantiate(wallPrefab, randomPosition, rotation); // Utilise la rotation calculée
     }
-
+    public void SpawnPorteIFMS()
+    {
+        MRUKRoom room = MRUK.Instance.GetCurrentRoom();
+        Debug.Log("Getting the room: " + room);
+        room.GenerateRandomPositionOnSurface(MRUK.SurfaceType.VERTICAL, minEdgeDistance, new LabelFilter(spawnLabelsPorteIFMS), out Vector3 pos, out Vector3 norm);
+        Debug.Log($"Spawn position: {pos}, Normal: {norm}");
+        Vector3 randomPosition = pos + norm * off;
+        randomPosition.y = 0.8f;         // Ajuste la position verticale pour qu'elle soit à 1,50 m du sol
+        Quaternion rotation = Quaternion.LookRotation(norm) * Quaternion.Euler(0, 90, 0); // Calcule la rotation en fonction de la normale et ajoute une rotation de 90 degrés en Y
+        Instantiate(porteIFMS, randomPosition, rotation); // Utilise la rotation calculée
+    }
     public void SpawnBoardGames()
     {
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
