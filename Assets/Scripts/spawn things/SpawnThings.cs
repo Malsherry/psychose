@@ -8,12 +8,15 @@ public class SpawnThings : MonoBehaviour
     public GameObject cubePrefab; //cube qu'on fait spawn
     public GameObject wallPrefab; // truc qu'on fait spawn aux murs
     public GameObject footballPrefab; // babyfoot a faire spawn
+    public GameObject BoardGames; // jeux de société à faire spawn
+    public GameObject porteIFMS; // porte à faire spawn
 
     public float spawnTimer = 0.5f;
     private float timer;
-    public int nb_frames;
-    public bool spawnFootball;
+    public int nb_frames; // nombre de fois qu'on fait spawn de l'art mural
+    public bool spawnFootball; // si on fait spawn le babyfoot ou pas
     private float off = 0f;
+
 
     // paramètres dont on a besoin pour spawn des mesh aléatoirement dans la pièce
     public float minEdgeDistance;
@@ -21,6 +24,8 @@ public class SpawnThings : MonoBehaviour
     public MRUKAnchor.SceneLabels spawnLabelsWall;
     public MRUKAnchor.SceneLabels spawnLabelsFootball;
     public MRUKAnchor.SceneLabels avoid; // labels à éviter pour le spawn du babyfoot
+    public MRUKAnchor.SceneLabels spawnLabelsBoardGames; 
+    public MRUKAnchor.SceneLabels spawnLabelPorteIFMS; // label de la surface de la porte à faire spawn
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -43,6 +48,7 @@ public class SpawnThings : MonoBehaviour
             SpawnWallDecoration();
         }
         SpawnFootball();
+        SpawnBoardGames();
     }
 
     // Update is called once per frame
@@ -82,6 +88,58 @@ public class SpawnThings : MonoBehaviour
         Instantiate(wallPrefab, randomPosition, rotation); // Utilise la rotation calculée
     }
 
+    public void SpawnBoardGames()
+    {
+        MRUKRoom room = MRUK.Instance.GetCurrentRoom();
+        Debug.Log("Getting the boardroom: " + room);
+
+        MRUKAnchor biggestTable = null;
+        float maxSurface = 0f;
+
+        foreach (var anchor in room.Anchors)
+        {
+            Debug.Log($"BoardAnchor: {anchor.name}, {spawnLabelsBoardGames}");
+            if (anchor.HasAnyLabel(spawnLabelsBoardGames))
+            {
+                MeshFilter meshFilter = anchor.GetComponentInChildren<MeshFilter>();
+                if (meshFilter != null && meshFilter.sharedMesh != null)
+                {
+                    Bounds bounds = meshFilter.sharedMesh.bounds;
+
+                    // On utilise la taille projetée au sol (X et Z, en local)
+                    Vector3 scale = anchor.transform.lossyScale;
+                    float scaledX = bounds.size.x * scale.x;
+                    float scaledZ = bounds.size.z * scale.z;
+                    float surface = scaledX * scaledZ;
+
+                    Debug.Log($"Table détectée : {anchor.name}, surface = {surface}");
+
+                    if (surface > maxSurface)
+                    {
+                        maxSurface = surface;
+                        biggestTable = anchor;
+                    }
+                }
+            }
+        }
+
+        if (biggestTable != null)
+        {
+            Debug.Log($"Plus grande table trouvée : {biggestTable.name}, surface = {maxSurface}");
+
+            // On place le jeu de société au-dessus de la table
+            Vector3 pos = biggestTable.transform.position + Vector3.up * 0.1f; // ajuster si besoin
+            Quaternion rot = Quaternion.LookRotation(biggestTable.transform.forward, Vector3.up); // orienté comme la table
+
+            Instantiate(BoardGames, pos, rot);
+        }
+        else
+        {
+            Debug.LogWarning("Aucune table détectée pour placer les jeux de société.");
+        }
+    }
+
+
     public void SpawnFootball()
     {
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
@@ -117,6 +175,7 @@ public class SpawnThings : MonoBehaviour
                     isFarEnough = false;
                     Debug.Log($"Position trop proche d'un élément avec le label à éviter : {anchor.name}");
                     break;
+                    
                 }
             }
 
