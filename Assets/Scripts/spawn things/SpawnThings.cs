@@ -49,7 +49,7 @@ public class SpawnThings : MonoBehaviour
         }
         SpawnFootball();
         SpawnBoardGames();
-        SpawnPorteIFMS();
+        SpawnPorteIFMS2();
     }
 
     // Update is called once per frame
@@ -89,7 +89,7 @@ public class SpawnThings : MonoBehaviour
         Instantiate(wallPrefab, randomPosition, rotation); // Utilise la rotation calculée
     }
     public void SpawnPorteIFMS()
-    {
+    {       
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
         Debug.Log("Getting the room: " + room);
         room.GenerateRandomPositionOnSurface(MRUK.SurfaceType.VERTICAL, minEdgeDistance, new LabelFilter(spawnLabelsPorteIFMS), out Vector3 pos, out Vector3 norm);
@@ -98,7 +98,68 @@ public class SpawnThings : MonoBehaviour
         randomPosition.y = 0.8f;         // Ajuste la position verticale pour qu'elle soit à 1,50 m du sol
         Quaternion rotation = Quaternion.LookRotation(norm) * Quaternion.Euler(0, 90, 0); // Calcule la rotation en fonction de la normale et ajoute une rotation de 90 degrés en Y
         Instantiate(porteIFMS, randomPosition, rotation); // Utilise la rotation calculée
+
+
     }
+
+    public void SpawnPorteIFMS2()
+    {
+        MRUKRoom room = MRUK.Instance.GetCurrentRoom();
+
+        float minDistanceFromAvoidLabels = 0.3f;
+        int maxAttempts = 20;
+
+        Vector3 pos = Vector3.zero;
+        Vector3 norm = Vector3.forward;
+        bool positionFound = false;
+
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
+        {
+            // On cherche une position sur une surface VERTICALE (type mur), pas FACING_UP
+            if (!room.GenerateRandomPositionOnSurface(
+                MRUK.SurfaceType.VERTICAL,
+                minEdgeDistance,
+                new LabelFilter(spawnLabelsPorteIFMS),
+                out pos,
+                out norm))
+            {
+                Debug.LogWarning("Impossible de générer une position pour la porte (aucun mur trouvé)");
+                return;
+            }
+
+            // Vérifie la distance par rapport aux éléments avec les labels à éviter
+            bool isFarEnough = true;
+            foreach (var anchor in room.Anchors)
+            {
+                if (anchor.HasAnyLabel(avoid) && Vector3.Distance(anchor.transform.position, pos) < minDistanceFromAvoidLabels)
+                {
+                    isFarEnough = false;
+                    Debug.Log($"Position trop proche d'un élément à éviter : {anchor.name}");
+                    break;
+                }
+            }
+
+            if (isFarEnough)
+            {
+                positionFound = true;
+                Debug.Log($"Position valide trouvée pour la porte : {pos}, Normale : {norm}");
+                break;
+            }
+        }
+
+        if (!positionFound)
+        {
+            Debug.LogWarning("Impossible de trouver une position valide pour la porte après plusieurs tentatives.");
+            return;
+        }
+
+        // Positionnement et rotation
+        Vector3 spawnPosition = pos + norm * off;
+        spawnPosition.y = 0.8f; // Ajustement vertical
+        Quaternion rotation = Quaternion.LookRotation(norm) * Quaternion.Euler(0, 90f, 0);
+        Instantiate(porteIFMS, spawnPosition, rotation);
+    }
+
     public void SpawnBoardGames()
     {
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
