@@ -43,13 +43,13 @@ public class SpawnThings : MonoBehaviour
         }
 
         // Une fois la salle initialisée, lancer les spawns
+        SpawnPorteIFMS2();
         for (int i = 0; i < nb_frames; i++)
         {
             SpawnWallDecoration();
         }
         SpawnFootball();
         SpawnBoardGames();
-        SpawnPorteIFMS2();
     }
 
     // Update is called once per frame
@@ -88,34 +88,36 @@ public class SpawnThings : MonoBehaviour
         Quaternion rotation = Quaternion.LookRotation(norm) * Quaternion.Euler(0, 90, 0); // Calcule la rotation en fonction de la normale et ajoute une rotation de 90 degrés en Y
         Instantiate(wallPrefab, randomPosition, rotation); // Utilise la rotation calculée
     }
-    public void SpawnPorteIFMS()
-    {       
-        MRUKRoom room = MRUK.Instance.GetCurrentRoom();
-        Debug.Log("Getting the room: " + room);
-        room.GenerateRandomPositionOnSurface(MRUK.SurfaceType.VERTICAL, minEdgeDistance, new LabelFilter(spawnLabelsPorteIFMS), out Vector3 pos, out Vector3 norm);
-        Debug.Log($"Spawn position: {pos}, Normal: {norm}");
-        Vector3 randomPosition = pos + norm * off;
-        randomPosition.y = 0.8f;         // Ajuste la position verticale pour qu'elle soit à 1,50 m du sol
-        Quaternion rotation = Quaternion.LookRotation(norm) * Quaternion.Euler(0, 90, 0); // Calcule la rotation en fonction de la normale et ajoute une rotation de 90 degrés en Y
-        Instantiate(porteIFMS, randomPosition, rotation); // Utilise la rotation calculée
+    /* public void SpawnPorteIFMS()
+     {       
+         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
+         Debug.Log("Getting the room: " + room);
+         room.GenerateRandomPositionOnSurface(MRUK.SurfaceType.VERTICAL, minEdgeDistance, new LabelFilter(spawnLabelsPorteIFMS), out Vector3 pos, out Vector3 norm);
+         Debug.Log($"Spawn position: {pos}, Normal: {norm}");
+         Vector3 randomPosition = pos + norm * off;
+         randomPosition.y = 0.8f;         // Ajuste la position verticale pour qu'elle ne décolle pas du sol
+         Quaternion rotation = Quaternion.LookRotation(norm) * Quaternion.Euler(0, 90, 0); // Calcule la rotation en fonction de la normale et ajoute une rotation de 90 degrés en Y
+         Instantiate(porteIFMS, randomPosition, rotation); // Utilise la rotation calculée
 
 
-    }
+     }*/    // SpawnPorteIFMS2 est une version améliorée de SpawnPorteIFMS
 
     public void SpawnPorteIFMS2()
     {
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
 
-        float minDistanceFromAvoidLabels = 0.3f;
-        int maxAttempts = 20;
+        float minDistanceFromAvoidLabels = 1.3f; // Distance minimale à respecter
+        int maxAttempts = 40; // Nombre maximum de tentatives pour trouver une position valide
 
         Vector3 pos = Vector3.zero;
         Vector3 norm = Vector3.forward;
         bool positionFound = false;
 
+        Vector3 porteSize = new Vector3(1.0f, 2.0f, 0.1f); // Dimensions approximatives de la porte (largeur, hauteur, profondeur)
+
         for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
-            // On cherche une position sur une surface VERTICALE (type mur), pas FACING_UP
+            // Génère une position sur un mur (VERTICAL)
             if (!room.GenerateRandomPositionOnSurface(
                 MRUK.SurfaceType.VERTICAL,
                 minEdgeDistance,
@@ -123,42 +125,115 @@ public class SpawnThings : MonoBehaviour
                 out pos,
                 out norm))
             {
-                Debug.LogWarning("Impossible de générer une position pour la porte (aucun mur trouvé)");
+                Debug.LogWarning("Porte : Impossible de générer une position (aucun mur trouvé)");
                 return;
             }
 
             // Vérifie la distance par rapport aux éléments avec les labels à éviter
             bool isFarEnough = true;
+
             foreach (var anchor in room.Anchors)
             {
-                if (anchor.HasAnyLabel(avoid) && Vector3.Distance(anchor.transform.position, pos) < minDistanceFromAvoidLabels)
+                // Ignore les objets avec le label "wall_face"
+                if (anchor.HasAnyLabel(MRUKAnchor.SceneLabels.WALL_FACE))
+                    continue;
+
+                if (!anchor.HasAnyLabel(avoid))
+                    continue;
+
+                // Vérifie si l'objet a un ou plusieurs colliders
+                Collider[] colliders = anchor.GetComponentsInChildren<Collider>(true);
+                if (colliders.Length > 0)
                 {
-                    isFarEnough = false;
-                    Debug.Log($"Position trop proche d'un élément à éviter : {anchor.name}");
+                    foreach (var col in colliders)
+                    {
+                        float dist;
+
+                        // Si le collider est compatible avec ClosestPoint, utilisez-le
+                        if (col is BoxCollider || col is SphereCollider || col is CapsuleCollider || (col is MeshCollider meshCol && meshCol.convex))
+                        {
+                            dist = Vector3.Distance(col.ClosestPoint(pos), pos);
+                        }
+                        else
+                        {
+                            // Sinon, utilisez une vérification de distance simple avec transform.position
+                            dist = Vector3.Distance(anchor.transform.position, pos);
+                        }
+
+                        if (dist < minDistanceFromAvoidLabels)
+                        {
+                            isFarEnough = false;
+                            Debug.Log($"Porte : Trop proche de {anchor.name} via {col.name} (dist : {dist})");
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    // Cas fallback : pas de collider, vérification simple avec transform.position
+                    float fallbackDist = Vector3.Distance(anchor.transform.position, pos);
+                    if (fallbackDist < minDistanceFromAvoidLabels)
+                    {
+                        isFarEnough = false;
+                        Debug.Log($"Porte : Trop proche de {anchor.name} (fallback sans collider, dist : {fallbackDist})");
+                        break;
+                    }
+                }
+
+                if (!isFarEnough)
                     break;
+            }
+
+            // Vérifie les collisions avec d'autres objets dans la zone de la porte
+            if (isFarEnough)
+            {
+                Collider[] overlapColliders = Physics.OverlapBox(
+                    pos, // Centre de la zone
+                    porteSize / 2, // Demi-dimensions de la porte
+                    Quaternion.LookRotation(norm) // Orientation de la porte
+                );
+
+                if (overlapColliders.Length > 0)
+                {
+                    foreach (var overlapCollider in overlapColliders)
+                    {
+                        // Vérifie si l'objet chevauché a un label dans "avoid"
+                        MRUKAnchor anchor = overlapCollider.GetComponentInParent<MRUKAnchor>();
+                        if (anchor != null && anchor.HasAnyLabel(avoid))
+                        {
+                            isFarEnough = false;
+                            Debug.Log($"Porte : Position rejetée car elle chevauche un objet à éviter : {overlapCollider.name} (parent : {overlapCollider.transform.parent?.name})");
+                            break;
+                        }
+                    }
                 }
             }
 
             if (isFarEnough)
             {
                 positionFound = true;
-                Debug.Log($"Position valide trouvée pour la porte : {pos}, Normale : {norm}");
+                Debug.Log($"Porte : Position valide trouvée : {pos}, Normale : {norm}");
                 break;
             }
         }
 
         if (!positionFound)
         {
-            Debug.LogWarning("Impossible de trouver une position valide pour la porte après plusieurs tentatives.");
+            Debug.LogWarning("Porte : Aucune position valide trouvée après plusieurs tentatives.");
             return;
         }
 
         // Positionnement et rotation
         Vector3 spawnPosition = pos + norm * off;
-        spawnPosition.y = 0.8f; // Ajustement vertical
+        spawnPosition.y = 0.05f; // Ajustement vertical
+        spawnPosition.x -= 0.08f; // Ajustement horizontal
         Quaternion rotation = Quaternion.LookRotation(norm) * Quaternion.Euler(0, 90f, 0);
+
         Instantiate(porteIFMS, spawnPosition, rotation);
     }
+
+
+
 
     public void SpawnBoardGames()
     {

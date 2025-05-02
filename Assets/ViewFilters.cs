@@ -3,21 +3,20 @@ using System.Collections;
 
 public class ViewFilters : MonoBehaviour
 {
-    public Material filterMaterial; // Ton matériau rouge (avec transparence possible)
-    public float distanceFromCamera = 0.5f;
-    public float yOffset = -0.05f; // Légère baisse du filtre
+    public Material filterMaterial; // Matériau du filtre   
+    public float distanceFromCamera = 0.5f; // Distance entre la caméra et le plane
+    public float yOffset = -0.05f; // Décalage vertical
     public float fadeDuration = 2.0f; // Durée du fondu (en secondes)
-    public float minInterval = 20f; // Délai min entre effets
-    public float maxInterval = 120f; // Délai max entre effets
+    public float minInterval = 20f; // délai min entre effets
+    public float maxInterval = 120f; // délai max entre effets
 
-    private GameObject filterPlane;
-    private Camera mainCamera;
-    private Material runtimeMaterial;
-    private Coroutine fadeCoroutine;
+    private GameObject filterPlane;     // Plane pour le filtre
+    private Camera mainCamera;         // Référence à la caméra principale
+    private Material runtimeMaterial;   // Matériau instancié pour le filtre
 
     private void Start()
     {
-        mainCamera = Camera.main;
+        mainCamera = Camera.main; // vérifie si la caméra principale existe
         if (mainCamera == null)
         {
             Debug.LogError("No Main Camera found.");
@@ -28,7 +27,7 @@ public class ViewFilters : MonoBehaviour
         filterPlane = GameObject.CreatePrimitive(PrimitiveType.Quad);
         filterPlane.name = "ViewFilterPlane";
 
-        // Supprimer collider
+        // Supprimer collider qui sert a rien dans notre cas
         Destroy(filterPlane.GetComponent<Collider>());
 
         // Dupliquer le matériau pour pouvoir le modifier sans affecter l'original
@@ -44,6 +43,7 @@ public class ViewFilters : MonoBehaviour
 
         // Parenté à la caméra
         filterPlane.transform.SetParent(mainCamera.transform);
+
 
         // Position devant la caméra
         filterPlane.transform.localPosition = new Vector3(0, yOffset, distanceFromCamera);
