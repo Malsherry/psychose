@@ -3214,6 +3214,8 @@ MonoBehaviour:
   avoid: 16312
   spawnLabelsBoardGames: 8
   spawnLabelsPorteIFMS: 4
+  window: 64
+  OutsideNoise: {fileID: 8300000, guid: 2daca1174bc2a794da47de0641fbe0cc, type: 3}
 --- !u!1 &517424773
 GameObject:
   m_ObjectHideFlags: 0

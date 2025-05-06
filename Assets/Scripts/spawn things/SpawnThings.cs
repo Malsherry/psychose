@@ -2,6 +2,7 @@ using System.Threading;
 using UnityEngine;
 using Meta.XR.MRUtilityKit;
 using System.Collections;
+using Oculus.Interaction.DebugTree;
 
 public class SpawnThings : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class SpawnThings : MonoBehaviour
     public GameObject footballPrefab; // babyfoot a faire spawn
     public GameObject BoardGames; // jeux de société à faire spawn
     public GameObject porteIFMS; //porte a faire spawn
+    
 
     public float spawnTimer = 0.5f;
     private float timer;
@@ -26,7 +28,8 @@ public class SpawnThings : MonoBehaviour
     public MRUKAnchor.SceneLabels avoid; // labels à éviter pour le spawn du babyfoot
     public MRUKAnchor.SceneLabels spawnLabelsBoardGames;
     public MRUKAnchor.SceneLabels spawnLabelsPorteIFMS;
-
+    public MRUKAnchor.SceneLabels window;
+    public AudioClip OutsideNoise;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -50,6 +53,7 @@ public class SpawnThings : MonoBehaviour
         }
         SpawnFootball();
         SpawnBoardGames();
+        SpawnOutsideNoiseOnWindow();
     }
 
     // Update is called once per frame
@@ -88,20 +92,7 @@ public class SpawnThings : MonoBehaviour
         Quaternion rotation = Quaternion.LookRotation(norm) * Quaternion.Euler(0, 90, 0); // Calcule la rotation en fonction de la normale et ajoute une rotation de 90 degrés en Y
         Instantiate(wallPrefab, randomPosition, rotation); // Utilise la rotation calculée
     }
-    /* public void SpawnPorteIFMS()
-     {       
-         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
-         Debug.Log("Getting the room: " + room);
-         room.GenerateRandomPositionOnSurface(MRUK.SurfaceType.VERTICAL, minEdgeDistance, new LabelFilter(spawnLabelsPorteIFMS), out Vector3 pos, out Vector3 norm);
-         Debug.Log($"Spawn position: {pos}, Normal: {norm}");
-         Vector3 randomPosition = pos + norm * off;
-         randomPosition.y = 0.8f;         // Ajuste la position verticale pour qu'elle ne décolle pas du sol
-         Quaternion rotation = Quaternion.LookRotation(norm) * Quaternion.Euler(0, 90, 0); // Calcule la rotation en fonction de la normale et ajoute une rotation de 90 degrés en Y
-         Instantiate(porteIFMS, randomPosition, rotation); // Utilise la rotation calculée
-
-
-     }*/    // SpawnPorteIFMS2 est une version améliorée de SpawnPorteIFMS
-
+ 
     public void SpawnPorteIFMS2()
     {
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
@@ -353,6 +344,43 @@ public class SpawnThings : MonoBehaviour
         randomPosition.y = 0.75f; // Ajuste la position verticale pour qu'elle soit à 0,75 m du sol
         Instantiate(footballPrefab, randomPosition, finalRotation);
     }
+
+    public void SpawnOutsideNoiseOnWindow()
+    {
+        MRUKRoom room = MRUK.Instance.GetCurrentRoom();
+
+        foreach (var anchor in room.Anchors)
+        {
+            if (anchor.HasAnyLabel(window))
+            {
+                Debug.Log($"AUDIO Fenêtre trouvée : {anchor.name}");
+                // Position légèrement en avant de la fenêtre
+                Vector3 soundPosition = anchor.transform.position + anchor.transform.forward * 0.05f;
+
+                // Créer un GameObject qui porte le son
+                GameObject soundEmitter = new GameObject("WindowOutsideNoise");
+                soundEmitter.transform.position = soundPosition;
+                soundEmitter.transform.rotation = anchor.transform.rotation;
+                soundEmitter.transform.SetParent(anchor.transform); // Pour qu’il suive la fenêtre
+                Debug.Log("Position du son : " + soundPosition);
+                // Ajouter un AudioSource
+                AudioSource audioSource = soundEmitter.AddComponent<AudioSource>();
+                audioSource.clip = OutsideNoise;
+                audioSource.loop = true;
+                Debug.Log("Son : " + OutsideNoise);
+                audioSource.spatialBlend = 1.0f; // Son 3D
+                audioSource.minDistance = 1.0f;
+                audioSource.maxDistance = 10.0f;
+                audioSource.Play();
+
+                Debug.Log("Son extérieur ajouté à la fenêtre : " + anchor.name);
+                return; // On ne prend que la première fenêtre
+            }
+        }
+
+        Debug.LogWarning("Aucune fenêtre trouvée pour jouer le son.");
+    }
+
 
 
 
