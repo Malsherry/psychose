@@ -3211,7 +3211,7 @@ MonoBehaviour:
   spawnLabels: 1
   spawnLabelsWall: 4
   spawnLabelsFootball: 1
-  avoid: 16312
+  avoid: 16376
   spawnLabelsBoardGames: 8
   spawnLabelsPorteIFMS: 4
   window: 64

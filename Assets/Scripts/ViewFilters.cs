@@ -1,8 +1,11 @@
-using UnityEngine;
+    using UnityEngine;
 using System.Collections;
 
 public class ViewFilters : MonoBehaviour
 {
+
+    public static bool isActive = true; // Indique si le filtre est actif ou non
+                                        // 
     public Material filterMaterial; // Matériau du filtre   
     public float distanceFromCamera = 0.5f; // Distance entre la caméra et le plane
     public float yOffset = -0.05f; // Décalage vertical
@@ -21,6 +24,10 @@ public class ViewFilters : MonoBehaviour
         {
             Debug.LogError("No Main Camera found.");
             return;
+        }
+        if (!isActive)
+        {
+            return; // Si le filtre n'est pas actif, on ne fait rien
         }
 
         // Créer le plane

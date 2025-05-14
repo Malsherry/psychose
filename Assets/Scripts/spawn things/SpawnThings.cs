@@ -6,6 +6,13 @@ using Oculus.Interaction.DebugTree;
 
 public class SpawnThings : MonoBehaviour
 {
+    public static bool spawnPorteIFMS = true;
+    public static bool spawnWallDecoration = true;
+    public static bool spawnFootball = true;
+    public static bool spawnBoardGames = true;
+    public static bool spawnWindowNoise = true;
+    public static bool spawnCubes = true; // pour faire spawn des cubes aléatoirement dans la pièce 
+
     public GameObject cubePrefab; //cube qu'on fait spawn
     public GameObject wallPrefab; // truc qu'on fait spawn aux murs
     public GameObject footballPrefab; // babyfoot a faire spawn
@@ -16,7 +23,6 @@ public class SpawnThings : MonoBehaviour
     public float spawnTimer = 0.5f;
     private float timer;
     public int nb_frames; // nombre de fois qu'on fait spawn de l'art mural
-    public bool spawnFootball; // si on fait spawn le babyfoot ou pas
     private float off = 0f;
 
 
@@ -38,23 +44,35 @@ public class SpawnThings : MonoBehaviour
     }
 
     private IEnumerator WaitForRoomInitialization()
-    {
-        // Attendre que MRUK.Instance soit initialisé
-        while (!MRUK.Instance || !MRUK.Instance.IsInitialized)
         {
-            yield return null;
+            // Attendre que MRUK.Instance soit initialisé
+            while (!MRUK.Instance || !MRUK.Instance.IsInitialized)
+            {
+                yield return null;
+            }
+
+            // Une fois la salle initialisée, lancer les spawns conditionnels
+            if (spawnPorteIFMS)
+                SpawnPorteIFMS2();
+
+            if (spawnWallDecoration)
+            {
+                for (int i = 0; i < nb_frames; i++)
+                {
+                    SpawnWallDecoration();
+                }
+            }
+
+            if (spawnFootball)
+                SpawnFootball();
+
+            if (spawnBoardGames)
+                SpawnBoardGames();
+
+            if (spawnWindowNoise)
+                SpawnOutsideNoiseOnWindow();
         }
 
-        // Une fois la salle initialisée, lancer les spawns
-        SpawnPorteIFMS2();
-        for (int i = 0; i < nb_frames; i++)
-        {
-            SpawnWallDecoration();
-        }
-        SpawnFootball();
-        SpawnBoardGames();
-        SpawnOutsideNoiseOnWindow();
-    }
 
     // Update is called once per frame
     void Update()
@@ -62,7 +80,7 @@ public class SpawnThings : MonoBehaviour
         if (!MRUK.Instance || !MRUK.Instance.IsInitialized) return;
 
         timer += Time.deltaTime;
-        if (timer > spawnTimer)
+        if ((timer > spawnTimer) && spawnCubes) // si le timer est supérieur à spawnTimer et qu'on fait spawn des cubes
         {
             SpawnCubes();
             timer -= spawnTimer;
@@ -89,6 +107,8 @@ public class SpawnThings : MonoBehaviour
         Vector3 randomPosition = pos + norm * off;
 
         randomPosition.y = 1.5f;         // Ajuste la position verticale pour qu'elle soit à 1,50 m du sol
+        randomPosition.x = randomPosition.x - 0.05f; // Ajustement horizontal
+
         Quaternion rotation = Quaternion.LookRotation(norm) * Quaternion.Euler(0, 90, 0); // Calcule la rotation en fonction de la normale et ajoute une rotation de 90 degrés en Y
         Instantiate(wallPrefab, randomPosition, rotation); // Utilise la rotation calculée
     }
@@ -214,13 +234,18 @@ public class SpawnThings : MonoBehaviour
             return;
         }
 
-        // Positionnement et rotation
-        Vector3 spawnPosition = pos + norm * off;
+        float depthOffset = 0.01f; // Distance pour ressortir un peu la porte
+
+        // Le "x" de la porte doit pointer dans la direction +norm
+        Quaternion rotation = Quaternion.LookRotation(Vector3.Cross(Vector3.up, norm), Vector3.up);
+
+        // On pousse un peu dans la direction +norm pour ressortir du mur
+        Vector3 spawnPosition = pos + (norm * depthOffset);
         spawnPosition.y = 0.05f; // Ajustement vertical
-        spawnPosition.x -= 0.08f; // Ajustement horizontal
-        Quaternion rotation = Quaternion.LookRotation(norm) * Quaternion.Euler(0, 90f, 0);
 
         Instantiate(porteIFMS, spawnPosition, rotation);
+
+
     }
 
 
