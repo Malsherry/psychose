@@ -39,4 +39,16 @@ public class MenuController : MonoBehaviour
     {
         SpawnThings.spawnCubes = value;
     }
+    public void ToggleRedFilter(bool value)
+    {
+        ViewFilters.isActive = value;
+    }
+    public void ToggleCamera(bool value)
+    {
+        SpawnThings.spawnCamera = value;
+    }
+    public void ToggleSpiders(bool value)
+    {
+        SpiderSpawner.spawnSpiders = value;
+    }
 }

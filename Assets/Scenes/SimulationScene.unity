@@ -3146,8 +3146,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 512977176}
-  - component: {fileID: 512977175}
   - component: {fileID: 512977177}
+  - component: {fileID: 512977178}
+  - component: {fileID: 512977179}
   m_Layer: 0
   m_Name: CubeSpawner
   m_TagString: Untagged
@@ -3155,23 +3156,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &512977175
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 512977174}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 976c6472ae34c844aa35b35dd085be34, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cubePrefab: {fileID: 8688803186435683820, guid: fd02805ee801de64a828e8190cac7784, type: 3}
-  spawnTimer: 5
-  off: 0.1
-  minEdgeDistance: 0.3
-  spawnLabels: 100
 --- !u!4 &512977176
 Transform:
   m_ObjectHideFlags: 0
@@ -3199,15 +3183,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbcccd68b2d7f3b49a594d46a67acb95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cubePrefab: {fileID: 6643269869201270357, guid: 1eddc956c402847479601a85a82b389f, type: 3}
+  cameraPrefab: {fileID: 919132149155446097, guid: 92947f46ceea8c246aa5c8f2f170de3f, type: 3}
+  cubePrefab: {fileID: 3115405434486643119, guid: 448ca6d523e0b1b499707895f125976c, type: 3}
   wallPrefab: {fileID: 919132149155446097, guid: 6503bd9de6b8ca4449a37aa93017ad6e, type: 3}
   footballPrefab: {fileID: 919132149155446097, guid: d245cffe6b30cbc4db728b12dfe63123, type: 3}
   BoardGames: {fileID: 6124326346620105088, guid: 3a7c1aa15757b98489ec2ec06eeb54a6, type: 3}
   porteIFMS: {fileID: 919132149155446097, guid: 7190c16c77c7342418f2450f70a5ccd5, type: 3}
   spawnTimer: 3
   nb_frames: 2
-  spawnFootball: 1
   minEdgeDistance: 1
+  spawnLabelsCamera: 2
   spawnLabels: 1
   spawnLabelsWall: 4
   spawnLabelsFootball: 1
@@ -3216,6 +3201,37 @@ MonoBehaviour:
   spawnLabelsPorteIFMS: 4
   window: 64
   OutsideNoise: {fileID: 8300000, guid: 2daca1174bc2a794da47de0641fbe0cc, type: 3}
+--- !u!114 &512977178
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 512977174}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9fffb81253061fd46bea40e1b97eea05, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  blinkingObjectName: clignotant
+  blinkingMaterialName: red_light
+--- !u!114 &512977179
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 512977174}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 976c6472ae34c844aa35b35dd085be34, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spiderPrefab: {fileID: 8688803186435683820, guid: fd02805ee801de64a828e8190cac7784, type: 3}
+  spawnTimer: 10
+  off: 0.1
+  minEdgeDistance: 0.3
+  spawnLabels: 1
 --- !u!1 &517424773
 GameObject:
   m_ObjectHideFlags: 0

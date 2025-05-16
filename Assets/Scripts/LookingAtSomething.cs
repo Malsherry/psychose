@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 [RequireComponent(typeof(Rigidbody))]
 public class LookingAtSomething : MonoBehaviour
@@ -38,9 +39,49 @@ public class LookingAtSomething : MonoBehaviour
         if (other.CompareTag(destroyableTags))
         {
             Debug.Log("Hallucination détectée et détruite : " + other.name);
-            // Si le tag correspond, on détruit l'objet
-            Destroy(other.gameObject);
+            // Lance le fondu avant destruction
+            StartCoroutine(FadeAndDestroy(other.gameObject, 0.5f)); // 1 seconde de fondu
         }
+    }
+
+    private IEnumerator FadeAndDestroy(GameObject target, float duration = 1.0f)
+    {
+        Renderer renderer = target.GetComponent<Renderer>();
+        if (renderer == null)
+        {
+            Destroy(target);
+            yield break;
+        }
+
+        // Utilise l'instance du matériau (pas le sharedMaterial)
+        Material mat = renderer.material;
+        Color startColor = mat.color;
+        float startAlpha = startColor.a;
+        float t = 0f;
+
+        // S'assure que le shader supporte la transparence
+        if (mat.HasProperty("_Color"))
+        {
+            // Pour URP/Lit ou Standard Shader, passe en mode transparent si besoin
+            mat.SetFloat("_Surface", 1); // 1 = Transparent (URP)
+            mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            mat.SetInt("_ZWrite", 0);
+            mat.DisableKeyword("_ALPHATEST_ON");
+            mat.EnableKeyword("_ALPHABLEND_ON");
+            mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+            mat.renderQueue = 3000;
+        }
+
+        while (t < duration)
+        {
+            t += Time.deltaTime;
+            float alpha = Mathf.Lerp(startAlpha, 0f, t / duration);
+            mat.color = new Color(startColor.r, startColor.g, startColor.b, alpha);
+            yield return null;
+        }
+
+        Destroy(target);
     }
 
     Mesh CreateVisionFrustum()

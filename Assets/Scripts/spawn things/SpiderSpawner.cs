@@ -2,9 +2,10 @@ using System.Threading;
 using UnityEngine;
 using Meta.XR.MRUtilityKit;
 
-public class CubeSpawner : MonoBehaviour
+public class SpiderSpawner : MonoBehaviour
 {
-    public GameObject cubePrefab; //cube qu'on fait spawn
+    public static bool spawnSpiders = true; //bool pour savoir si on fait spawn les spider ou pas
+    public GameObject spiderPrefab; //spider qu'on fait spawn
     public float spawnTimer = 1;
     private float timer;
     public float off;
@@ -17,7 +18,21 @@ public class CubeSpawner : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        //si spawnSpiders est faux, on ne fait rien
+        if (!spawnSpiders) return;
+        // On vérifie si MRUK est initialisé
+        if (!MRUK.Instance || !MRUK.Instance.IsInitialized)
+        {
+            Debug.LogError("MRUK is not initialized. Please initialize MRUK before spawning objects.");
+            return;
+        }
+        // On vérifie si la pièce actuelle est valide
+        MRUKRoom room = MRUK.Instance.GetCurrentRoom();
+        if (room == null)
+        {
+            Debug.LogError("Current room is null. Please ensure you are in a valid MRUK room.");
+            return;
+        }
     }
 
     // Update is called once per frame
@@ -40,7 +55,7 @@ public class CubeSpawner : MonoBehaviour
         Debug.Log($"Spawn position: {pos}, Normal: {norm}");
         
         Vector3 randomPosition = pos+ norm*off;
-        Instantiate(cubePrefab, randomPosition, Quaternion.identity);
+        Instantiate(spiderPrefab, randomPosition, Quaternion.identity);
        
     }
 }

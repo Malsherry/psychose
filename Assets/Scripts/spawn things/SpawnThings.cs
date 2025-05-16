@@ -6,6 +6,7 @@ using Oculus.Interaction.DebugTree;
 
 public class SpawnThings : MonoBehaviour
 {
+    public static bool spawnCamera = true; // pour faire spawn la caméra
     public static bool spawnPorteIFMS = true;
     public static bool spawnWallDecoration = true;
     public static bool spawnFootball = true;
@@ -13,6 +14,7 @@ public class SpawnThings : MonoBehaviour
     public static bool spawnWindowNoise = true;
     public static bool spawnCubes = true; // pour faire spawn des cubes aléatoirement dans la pièce 
 
+    public GameObject cameraPrefab; // caméra à faire spawn
     public GameObject cubePrefab; //cube qu'on fait spawn
     public GameObject wallPrefab; // truc qu'on fait spawn aux murs
     public GameObject footballPrefab; // babyfoot a faire spawn
@@ -28,6 +30,7 @@ public class SpawnThings : MonoBehaviour
 
     // paramètres dont on a besoin pour spawn des mesh aléatoirement dans la pièce
     public float minEdgeDistance;
+    public MRUKAnchor.SceneLabels spawnLabelsCamera;
     public MRUKAnchor.SceneLabels spawnLabels;
     public MRUKAnchor.SceneLabels spawnLabelsWall;
     public MRUKAnchor.SceneLabels spawnLabelsFootball;
@@ -71,7 +74,11 @@ public class SpawnThings : MonoBehaviour
 
             if (spawnWindowNoise)
                 SpawnOutsideNoiseOnWindow();
-        }
+
+            if (spawnCamera)
+                SpawnCamera();
+
+    }
 
 
     // Update is called once per frame
@@ -248,6 +255,38 @@ public class SpawnThings : MonoBehaviour
 
     }
 
+
+    public void SpawnCamera()
+    {
+        Debug.Log("Spawn Camera");
+        MRUKRoom room = MRUK.Instance.GetCurrentRoom();
+        // Génère une position sur une surface correspondant à spawnLabelsCamera
+        if (room.GenerateRandomPositionOnSurface(
+            MRUK.SurfaceType.FACING_DOWN,
+            minEdgeDistance,
+            new LabelFilter(spawnLabelsCamera),
+            out Vector3 pos,
+            out Vector3 norm)
+            )
+        {
+            Debug.Log("Spawn Camera 2");
+
+            Vector3 spawnPosition = pos + norm * 0.05f; // Légèrement au-dessus de la surface
+
+            // Ajoute une rotation de 180° sur X pour remettre la caméra à l'endroit
+            Quaternion rotation = Quaternion.LookRotation(Vector3.forward, norm) * Quaternion.Euler(180, 0, 0);
+
+            GameObject cameraObj = Instantiate(cameraPrefab, spawnPosition, rotation);
+
+            // Ajoute le script de clignotement si besoin
+            if (cameraObj.GetComponent<CameraBlink>() == null)
+                cameraObj.AddComponent<CameraBlink>();
+        }
+        else
+        {
+            Debug.LogWarning("Impossible de générer une position pour la caméra.");
+        }
+    }
 
 
 

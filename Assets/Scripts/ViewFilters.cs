@@ -5,7 +5,6 @@ public class ViewFilters : MonoBehaviour
 {
 
     public static bool isActive = true; // Indique si le filtre est actif ou non
-                                        // 
     public Material filterMaterial; // Matériau du filtre   
     public float distanceFromCamera = 0.5f; // Distance entre la caméra et le plane
     public float yOffset = -0.05f; // Décalage vertical
@@ -30,7 +29,7 @@ public class ViewFilters : MonoBehaviour
             return; // Si le filtre n'est pas actif, on ne fait rien
         }
 
-        // Créer le plane
+        // Créer le plane   
         filterPlane = GameObject.CreatePrimitive(PrimitiveType.Quad);
         filterPlane.name = "ViewFilterPlane";
 
