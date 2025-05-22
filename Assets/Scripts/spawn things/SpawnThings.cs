@@ -3,6 +3,7 @@ using UnityEngine;
 using Meta.XR.MRUtilityKit;
 using System.Collections;
 using Oculus.Interaction.DebugTree;
+using UnityEngine.Audio;
 
 public class SpawnThings : MonoBehaviour
 {
@@ -12,6 +13,7 @@ public class SpawnThings : MonoBehaviour
     public static bool spawnFootball = true;
     public static bool spawnBoardGames = true;
     public static bool spawnWindowNoise = true;
+    public static bool spawnDoorNoises = true;
     public static bool spawnCubes = true; // pour faire spawn des cubes aléatoirement dans la pièce 
 
     public GameObject cameraPrefab; // caméra à faire spawn
@@ -38,7 +40,12 @@ public class SpawnThings : MonoBehaviour
     public MRUKAnchor.SceneLabels spawnLabelsBoardGames;
     public MRUKAnchor.SceneLabels spawnLabelsPorteIFMS;
     public MRUKAnchor.SceneLabels window;
+    public MRUKAnchor.SceneLabels door_frame; // label de la porte
     public AudioClip OutsideNoise;
+    public AudioClip DoorKeyNoise;
+    public AudioMixerGroup doorKeyMixerGroup;
+    public AudioMixer doorKeyMixer;
+
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -46,8 +53,8 @@ public class SpawnThings : MonoBehaviour
         StartCoroutine(WaitForRoomInitialization());
     }
 
-    private IEnumerator WaitForRoomInitialization()
-        {
+    private IEnumerator WaitForRoomInitialization() // On attend que la salle soit initialisée avant de faire quoi que ce soit
+    {
             // Attendre que MRUK.Instance soit initialisé
             while (!MRUK.Instance || !MRUK.Instance.IsInitialized)
             {
@@ -78,6 +85,8 @@ public class SpawnThings : MonoBehaviour
             if (spawnCamera)
                 SpawnCamera();
 
+            if (spawnDoorNoises)
+                SpawnDoorKeyNoiseOnDoor();
     }
 
 
@@ -346,9 +355,8 @@ public class SpawnThings : MonoBehaviour
     {
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
 
-        // Distance minimale à respecter par rapport aux éléments avec les labels à éviter
-        float minDistanceFromAvoidLabels = 0.3f; // Par exemple, 2 mètres
-        int maxAttempts = 20; // Nombre maximum de tentatives pour trouver une position valide
+        float minDistanceFromAvoidLabels = 0.3f;
+        int maxAttempts = 20;
 
         Vector3 pos = Vector3.zero;
         Vector3 norm = Vector3.up;
@@ -356,7 +364,6 @@ public class SpawnThings : MonoBehaviour
 
         for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
-            // Génère une position en utilisant les labels pour le babyfoot
             if (!room.GenerateRandomPositionOnSurface(
                 MRUK.SurfaceType.FACING_UP,
                 minEdgeDistance,
@@ -368,7 +375,6 @@ public class SpawnThings : MonoBehaviour
                 return;
             }
 
-            // Vérifie la distance par rapport aux éléments avec les labels à éviter
             bool isFarEnough = true;
             foreach (var anchor in room.Anchors)
             {
@@ -377,7 +383,6 @@ public class SpawnThings : MonoBehaviour
                     isFarEnough = false;
                     Debug.Log($"Position trop proche d'un élément avec le label à éviter : {anchor.name}");
                     break;
-                    
                 }
             }
 
@@ -397,17 +402,26 @@ public class SpawnThings : MonoBehaviour
 
         Vector3 randomPosition = pos + norm * off;
 
-        // Base : on fait en sorte qu'il "colle" au sol
         Quaternion baseRotation = Quaternion.LookRotation(Vector3.forward, norm);
-
-        // Correction de l'axe si le prefab a les pieds en l'air (ajuste si c'est X ou Z qui est à l'envers)
         Quaternion modelCorrection = Quaternion.Euler(-90, 0, 0);
-
         Quaternion finalRotation = baseRotation * modelCorrection;
 
-        randomPosition.y = 0.75f; // Ajuste la position verticale pour qu'elle soit à 0,75 m du sol
-        Instantiate(footballPrefab, randomPosition, finalRotation);
+        randomPosition.y = 0.75f;
+
+        GameObject babyfootInstance = Instantiate(footballPrefab, randomPosition, finalRotation);
+        babyfootInstance.tag = "FilterTarget";
+        babyfootInstance.layer = LayerMask.NameToLayer("Interractable");
+
+        // AJOUT D'UN COLLIDER SI AUCUN N'EST PRÉSENT
+        if (babyfootInstance.GetComponent<Collider>() == null)
+        {
+            // Essaye d’ajouter un BoxCollider, ou tu peux changer pour MeshCollider si besoin
+            MeshCollider meshCollider = babyfootInstance.AddComponent<MeshCollider>();
+            meshCollider.convex = true; // Important si l’objet doit détecter des rayons en tant que Rigidbody
+            Debug.Log("Collider ajouté automatiquement au babyfoot.");
+        }
     }
+
 
     public void SpawnOutsideNoiseOnWindow()
     {
@@ -443,6 +457,80 @@ public class SpawnThings : MonoBehaviour
         }
 
         Debug.LogWarning("Aucune fenêtre trouvée pour jouer le son.");
+    }
+
+    public void SpawnDoorKeyNoiseOnDoor()
+    {
+        MRUKRoom room = MRUK.Instance.GetCurrentRoom();
+
+        foreach (var anchor in room.Anchors)
+        {
+            if (anchor.HasAnyLabel(door_frame))
+            {
+                Debug.Log($"AUDIO Porte trouvée : {anchor.name}");
+
+                // Position légèrement en avant de la porte
+                Vector3 soundPosition = anchor.transform.position + anchor.transform.forward * 0.05f;
+
+                // Créer un GameObject pour émettre le son
+                GameObject soundEmitter = new GameObject("DoorKeyNoiseEmitter");
+                soundEmitter.transform.position = soundPosition;
+                soundEmitter.transform.rotation = anchor.transform.rotation;
+                soundEmitter.transform.SetParent(anchor.transform); // Pour qu’il suive la porte
+                Debug.Log("Position du son : " + soundPosition);
+
+                // Ajouter un AudioSource
+                AudioSource audioSource = soundEmitter.AddComponent<AudioSource>();
+                audioSource.clip = DoorKeyNoise;
+                audioSource.loop = false; // Pas en boucle
+                audioSource.spatialBlend = 1.0f; // Son 3D
+                audioSource.minDistance = 1.0f;
+                audioSource.maxDistance = 10.0f;
+                audioSource.outputAudioMixerGroup = doorKeyMixerGroup;
+
+
+                // Lancer une coroutine pour jouer le son toutes les 40 secondes avec volume aléatoire
+                StartCoroutine(PlayDoorKeyNoisePeriodically(audioSource));
+
+                Debug.Log("Son de clé ajouté à la porte : " + anchor.name);
+                return; // On ne prend que la première porte
+            }
+        }
+
+        Debug.LogWarning("Aucune porte trouvée pour jouer le son.");
+    }
+
+    private IEnumerator PlayDoorKeyNoisePeriodically(AudioSource audioSource)
+    {
+        while (true)
+        {
+            // Volume aléatoire entre 0.3 et 1.0
+            float volume = Random.Range(0.1f, 1.0f);
+            audioSource.volume = volume; // Pour spatial blend (non mixé)
+
+            // Convertir volume [0.0, 1.0] en dB [-80, 0]
+            float safeVolume = Mathf.Max(volume, 0.0001f);
+            float volumeInDb = Mathf.Log10(safeVolume) * 20f;
+            doorKeyMixer.SetFloat("volume", volumeInDb);
+
+            // Distorsion aléatoire : 30% de chances d'appliquer un effet
+            bool applyDistortion = Random.value < 0.3f;
+
+            if (applyDistortion)
+            {
+                float distortionValue = Random.Range(0.1f, 1f);
+                doorKeyMixer.SetFloat("distortion", distortionValue);
+                Debug.Log($"Distorsion activée : {distortionValue}");
+            }
+            else
+            {
+                doorKeyMixer.SetFloat("distortion", 0f);
+                Debug.Log("Distorsion désactivée");
+            }
+            audioSource.Play();
+            Debug.Log($"Son joué avec volume linéaire : {volume} / dB : {volumeInDb}");
+            yield return new WaitForSeconds(55f);
+        }
     }
 
 

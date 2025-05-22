@@ -1,8 +1,14 @@
     using UnityEngine;
 using System.Collections;
+using UnityEngine.Rendering.UI;
 
 public class ViewFilters : MonoBehaviour
 {
+    private int layerMask;
+    public string targetTag = "FilterTarget";
+    public float gazeTimeRequired = 2f;
+    private float gazeTimer = 0f;
+    private Transform lastHitTransform = null;
 
     public static bool isActive = true; // Indique si le filtre est actif ou non
     public Material filterMaterial; // Matériau du filtre   
@@ -12,12 +18,17 @@ public class ViewFilters : MonoBehaviour
     public float minInterval = 20f; // délai min entre effets
     public float maxInterval = 120f; // délai max entre effets
 
+
+    public AudioClip filterSound; // Son à jouer pendant le filtre
+    private AudioSource audioSource;
+
     private GameObject filterPlane;     // Plane pour le filtre
     private Camera mainCamera;         // Référence à la caméra principale
     private Material runtimeMaterial;   // Matériau instancié pour le filtre
 
     private void Start()
     {
+        layerMask = LayerMask.GetMask("Interractable");
         mainCamera = Camera.main; // vérifie si la caméra principale existe
         if (mainCamera == null)
         {
@@ -46,7 +57,7 @@ public class ViewFilters : MonoBehaviour
         {
             Debug.LogWarning("No filter material assigned.");
         }
-
+        
         // Parenté à la caméra
         filterPlane.transform.SetParent(mainCamera.transform);
 
@@ -55,11 +66,20 @@ public class ViewFilters : MonoBehaviour
         filterPlane.transform.localPosition = new Vector3(0, yOffset, distanceFromCamera);
         filterPlane.transform.localRotation = Quaternion.identity;
 
+        // Ajouter un AudioSource au filtre
+        audioSource = filterPlane.AddComponent<AudioSource>();
+        audioSource.clip = filterSound;
+        audioSource.loop = true;
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 0f; // Son 2D (non spatial)
+        audioSource.volume = 0f; // Commence silencieux
+        audioSource.Play();
+
         // Adapter la taille
         UpdateFilterSize();
 
         // Démarrer le cycle des filtres
-        StartCoroutine(FilterCycle());
+        //StartCoroutine(FilterCycle());
     }
 
     private void UpdateFilterSize()
@@ -82,26 +102,93 @@ public class ViewFilters : MonoBehaviour
 
         }
     }
+    private IEnumerator TriggerFilterEffect()
+    {
+        Debug.Log("Filter effect triggered!");
+        yield return FadeTo(0.7f);
+        yield return new WaitForSeconds(5f); // Durée visible
+        yield return FadeTo(0f);
+
+        // On remet le timer à 0 pour autoriser une nouvelle activation
+        gazeTimer = 0f;
+        lastHitTransform = null;
+    }
 
     private IEnumerator FadeTo(float targetAlpha)
     {
-        if (runtimeMaterial == null)
+        if (runtimeMaterial == null || audioSource == null)
             yield break;
 
         Color color = runtimeMaterial.color;
         float startAlpha = color.a;
+        float startVolume = audioSource.volume;
         float time = 0f;
 
         while (time < fadeDuration)
         {
             time += Time.deltaTime;
             float t = time / fadeDuration;
+
+            // Changer alpha
             color.a = Mathf.Lerp(startAlpha, targetAlpha, t);
             runtimeMaterial.color = color;
+
+            // Changer volume (lié à alpha)
+            audioSource.volume = Mathf.Lerp(startVolume, targetAlpha, t);
+
             yield return null;
         }
 
         color.a = targetAlpha;
         runtimeMaterial.color = color;
+        audioSource.volume = targetAlpha;
     }
+
+    private void Update()
+    {
+        if (!isActive || mainCamera == null)
+            return;
+        Ray ray = new Ray(mainCamera.transform.position, mainCamera.transform.forward);
+        Debug.DrawRay(ray.origin, ray.direction * 10f, Color.red);
+
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit, 10f, layerMask))
+        {
+            Debug.DrawRay(ray.origin, ray.direction * 10f, Color.red);
+            Debug.Log("Hit: " + hit.transform.name + " on layer " + hit.transform.gameObject.layer);
+
+
+            if (hit.transform.CompareTag(targetTag))
+            {
+                Debug.Log("Filter hitting something interesting!");
+                if (lastHitTransform == hit.transform)
+                {
+                    gazeTimer += Time.deltaTime;
+                }
+                else
+                {
+                    lastHitTransform = hit.transform;
+                    gazeTimer = 0f;
+                }
+
+                if (gazeTimer >= gazeTimeRequired)
+                {
+                    StartCoroutine(TriggerFilterEffect());
+                    gazeTimer = -Mathf.Infinity; // Pour éviter de relancer tant que l'effet est en cours
+                }
+            }
+            else
+            {
+                lastHitTransform = null;
+                gazeTimer = 0f;
+            }
+        }
+        else
+        {
+            lastHitTransform = null;
+            gazeTimer = 0f;
+        }
+    }
+
+
 }

@@ -5,11 +5,12 @@ TagManager:
   serializedVersion: 3
   tags:
   - EyeCorner
+  - FilterTarget
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Interractable
   - Water
   - UI
   - 
