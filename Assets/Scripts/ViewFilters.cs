@@ -10,6 +10,9 @@ public class ViewFilters : MonoBehaviour
     private float gazeTimer = 0f;
     private Transform lastHitTransform = null;
 
+    private Coroutine currentFilterCoroutine = null;
+    private bool isFiltering = false;
+
     public static bool isActive = true; // Indique si le filtre est actif ou non
     public Material filterMaterial; // Matériau du filtre   
     public float distanceFromCamera = 0.5f; // Distance entre la caméra et le plane
@@ -104,15 +107,39 @@ public class ViewFilters : MonoBehaviour
     }
     private IEnumerator TriggerFilterEffect()
     {
+        isFiltering = true;
+
         Debug.Log("Filter effect triggered!");
         yield return FadeTo(0.7f);
-        yield return new WaitForSeconds(5f); // Durée visible
+
+        float elapsed = 0f;
+        float duration = 5f;
+
+        // Pendant l'affichage du filtre, on vérifie que l'utilisateur continue de regarder
+        while (elapsed < duration)
+        {
+            // Si le regard est perdu, on interrompt l'effet
+            Ray ray = new Ray(mainCamera.transform.position, mainCamera.transform.forward);
+            RaycastHit hit;
+            if (!Physics.Raycast(ray, out hit, 10f, layerMask) || hit.transform != lastHitTransform)
+            {
+                Debug.Log("Gaze lost, cancelling filter.");
+                break;
+            }
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
         yield return FadeTo(0f);
 
-        // On remet le timer à 0 pour autoriser une nouvelle activation
+        // Réinitialisation
         gazeTimer = 0f;
         lastHitTransform = null;
+        isFiltering = false;
+        currentFilterCoroutine = null;
     }
+
 
     private IEnumerator FadeTo(float targetAlpha)
     {
@@ -173,7 +200,11 @@ public class ViewFilters : MonoBehaviour
 
                 if (gazeTimer >= gazeTimeRequired)
                 {
-                    StartCoroutine(TriggerFilterEffect());
+                    if (!isFiltering)
+                    {
+                        currentFilterCoroutine = StartCoroutine(TriggerFilterEffect());
+                    }
+
                     gazeTimer = -Mathf.Infinity; // Pour éviter de relancer tant que l'effet est en cours
                 }
             }
