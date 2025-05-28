@@ -4,6 +4,7 @@ using Meta.XR.MRUtilityKit;
 using System.Collections;
 using Oculus.Interaction.DebugTree;
 using UnityEngine.Audio;
+using System.Collections.Generic;
 
 public class SpawnThings : MonoBehaviour
 {
@@ -16,19 +17,29 @@ public class SpawnThings : MonoBehaviour
     public static bool spawnDoorNoises = true;
     public static bool spawnCubes = true; // pour faire spawn des cubes aléatoirement dans la pièce 
 
+    [Header("Claquement de porte")]
+    public AudioClip randomNoiseClip; // Clip sélectionné dans l'inspecteur
+    public float noiseMinInterval = 30f;
+    public float noiseMaxInterval = 90f;
+
+    private AudioSource randomNoiseSource;
+    [Header("Prefabs des différents élements")]
+
     public GameObject cameraPrefab; // caméra à faire spawn
     public GameObject cubePrefab; //cube qu'on fait spawn
     public GameObject wallPrefab; // truc qu'on fait spawn aux murs
     public GameObject footballPrefab; // babyfoot a faire spawn
     public GameObject BoardGames; // jeux de société à faire spawn
     public GameObject porteIFMS; //porte a faire spawn
-    
+    [Header("Paramètres")]
+
 
     public float spawnTimer = 0.5f;
     private float timer;
     public int nb_frames; // nombre de fois qu'on fait spawn de l'art mural
     private float off = 0f;
 
+    [Header("Scene labels")]
 
     // paramètres dont on a besoin pour spawn des mesh aléatoirement dans la pièce
     public float minEdgeDistance;
@@ -41,35 +52,58 @@ public class SpawnThings : MonoBehaviour
     public MRUKAnchor.SceneLabels spawnLabelsPorteIFMS;
     public MRUKAnchor.SceneLabels window;
     public MRUKAnchor.SceneLabels door_frame; // label de la porte
+
+    [Header("Autres bruits")]
+
     public AudioClip OutsideNoise;
     public AudioClip DoorKeyNoise;
     public AudioMixerGroup doorKeyMixerGroup;
-    public AudioMixer doorKeyMixer;
+    public AudioMixer AudioMixer; //psychose Mixuer
+    public AudioMixerGroup OutsideMixerGroup; // Le group où le son passera
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         StartCoroutine(WaitForRoomInitialization());
+        // Préparer la source audio pour le bruit aléatoire
+        randomNoiseSource = gameObject.AddComponent<AudioSource>();
+        randomNoiseSource.clip = randomNoiseClip;
+        randomNoiseSource.playOnAwake = false;
+        randomNoiseSource.spatialBlend = 0f;
+
+        // Lancer la coroutine
+        //StartCoroutine(PlayRandomNoise());
+
     }
 
-    private IEnumerator WaitForRoomInitialization() // On attend que la salle soit initialisée avant de faire quoi que ce soit
+    private IEnumerator WaitForRoomInitialization()
     {
-            // Attendre que MRUK.Instance soit initialisé
-            while (!MRUK.Instance || !MRUK.Instance.IsInitialized)
-            {
-                yield return null;
-            }
+        // Attendre que MRUK soit initialisé
+        while (!MRUK.Instance || !MRUK.Instance.IsInitialized)
+            yield return null;
 
-            // Une fois la salle initialisée, lancer les spawns conditionnels
-            if (spawnPorteIFMS)
+        // Attendre que la room soit créée et qu'il y ait au moins une ancre détectée
+        MRUKRoom room = null;
+        while (room == null || room.Anchors == null || room.Anchors.Count == 0)
+        {
+            room = MRUK.Instance.GetCurrentRoom();
+            yield return null;
+        }
+
+        Debug.Log("[SpawnThings] Room et anchors initialisés, lancement des spawns.");
+
+
+        // Une fois la salle initialisée, lancer les spawns conditionnels
+        if (spawnPorteIFMS)
                 SpawnPorteIFMS2();
 
             if (spawnWallDecoration)
             {
                 for (int i = 0; i < nb_frames; i++)
                 {
-                    SpawnWallDecoration();
+                //SpawnWallDecoration();
+                Debug.Log("youhou c'est moi le cadre");
                 }
             }
 
@@ -102,6 +136,19 @@ public class SpawnThings : MonoBehaviour
             timer -= spawnTimer;
         }
     }
+    private IEnumerator PlayRandomNoise()
+    {
+        while (true)
+        {
+            float waitTime = Random.Range(noiseMinInterval, noiseMaxInterval);
+            yield return new WaitForSeconds(waitTime);
+
+            if (randomNoiseClip != null && randomNoiseSource != null)
+            {
+                randomNoiseSource.Play();
+            }
+        }
+    }
 
     public void SpawnCubes()
     {
@@ -121,14 +168,25 @@ public class SpawnThings : MonoBehaviour
         Debug.Log($"Spawn position: {pos}, Normal: {norm}");
 
         Vector3 randomPosition = pos + norm * off;
+        randomPosition.y = 1.5f;
+        randomPosition.x = randomPosition.x - 0.05f;
 
-        randomPosition.y = 1.5f;         // Ajuste la position verticale pour qu'elle soit à 1,50 m du sol
-        randomPosition.x = randomPosition.x - 0.05f; // Ajustement horizontal
+        Quaternion rotation = Quaternion.LookRotation(norm) * Quaternion.Euler(0, 90, 0);
 
-        Quaternion rotation = Quaternion.LookRotation(norm) * Quaternion.Euler(0, 90, 0); // Calcule la rotation en fonction de la normale et ajoute une rotation de 90 degrés en Y
-        Instantiate(wallPrefab, randomPosition, rotation); // Utilise la rotation calculée
+        GameObject wallInstance = Instantiate(wallPrefab, randomPosition, rotation);
+
+        // Activation forcée récursive (pour être sûr)
+        wallInstance.SetActive(true);
+        foreach (var animator in wallInstance.GetComponentsInChildren<Animator>(true))
+        {
+            animator.enabled = true;
+            animator.gameObject.SetActive(true); // just in case
+            Debug.Log($"[SpawnWallDecoration] Animator trouvé: {animator.name} | ActiveInHierarchy: {animator.gameObject.activeInHierarchy}");
+        }
+
     }
- 
+
+
     public void SpawnPorteIFMS2()
     {
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
@@ -190,7 +248,7 @@ public class SpawnThings : MonoBehaviour
                         if (dist < minDistanceFromAvoidLabels)
                         {
                             isFarEnough = false;
-                            Debug.Log($"Porte : Trop proche de {anchor.name} via {col.name} (dist : {dist})");
+                            //Debug.Log($"Porte : Trop proche de {anchor.name} via {col.name} (dist : {dist})");
                             break;
                         }
                     }
@@ -312,9 +370,11 @@ public class SpawnThings : MonoBehaviour
             Debug.Log($"BoardAnchor: {anchor.name}, {spawnLabelsBoardGames}");
             if (anchor.HasAnyLabel(spawnLabelsBoardGames))
             {
+                Debug.Log($"Table détectée : {anchor.name} avec le label {spawnLabelsBoardGames}");
                 MeshFilter meshFilter = anchor.GetComponentInChildren<MeshFilter>();
                 if (meshFilter != null && meshFilter.sharedMesh != null)
                 {
+                    Debug.Log($"table: Mesh trouvé pour l'ancre {anchor.name}, taille : {meshFilter.sharedMesh.bounds.size}");
                     Bounds bounds = meshFilter.sharedMesh.bounds;
 
                     // On utilise la taille projetée au sol (X et Z, en local)
@@ -421,7 +481,10 @@ public class SpawnThings : MonoBehaviour
             Debug.Log("Collider ajouté automatiquement au babyfoot.");
         }
     }
-
+    /// <summary>
+    /// Bruits qui apparaissent sur les portes/ fenêtre qui crééent parfois des hallucinations sonores
+    /// </summary>
+    /// 
 
     public void SpawnOutsideNoiseOnWindow()
     {
@@ -432,32 +495,87 @@ public class SpawnThings : MonoBehaviour
             if (anchor.HasAnyLabel(window))
             {
                 Debug.Log($"AUDIO Fenêtre trouvée : {anchor.name}");
-                // Position légèrement en avant de la fenêtre
+
                 Vector3 soundPosition = anchor.transform.position + anchor.transform.forward * 0.05f;
 
-                // Créer un GameObject qui porte le son
                 GameObject soundEmitter = new GameObject("WindowOutsideNoise");
                 soundEmitter.transform.position = soundPosition;
                 soundEmitter.transform.rotation = anchor.transform.rotation;
-                soundEmitter.transform.SetParent(anchor.transform); // Pour qu’il suive la fenêtre
-                Debug.Log("Position du son : " + soundPosition);
-                // Ajouter un AudioSource
+                soundEmitter.transform.SetParent(anchor.transform);
+
                 AudioSource audioSource = soundEmitter.AddComponent<AudioSource>();
+                audioSource.outputAudioMixerGroup = OutsideMixerGroup;
                 audioSource.clip = OutsideNoise;
                 audioSource.loop = true;
-                Debug.Log("Son : " + OutsideNoise);
-                audioSource.spatialBlend = 1.0f; // Son 3D
+                audioSource.spatialBlend = 1.0f;
                 audioSource.minDistance = 1.0f;
                 audioSource.maxDistance = 10.0f;
+                audioSource.volume = 0.5f;
+
                 audioSource.Play();
 
                 Debug.Log("Son extérieur ajouté à la fenêtre : " + anchor.name);
-                return; // On ne prend que la première fenêtre
+
+                StartCoroutine(HandleOutsideNoiseCycle(audioSource));
+                return;
             }
         }
 
         Debug.LogWarning("Aucune fenêtre trouvée pour jouer le son.");
     }
+
+    private IEnumerator OutsideNoiseEffect(AudioSource source)
+    {
+        float rampDuration = 0.3f;
+        float holdDuration = 0.7f;
+        float timer = 0f;
+
+        // Effet progressif
+        while (timer < rampDuration)
+        {
+            timer += Time.deltaTime;
+            float t = timer / rampDuration;
+
+            source.volume = Mathf.Lerp(0.5f, 2f, t); // au-delà de 1.0 pour exagérer
+            AudioMixer.SetFloat("DistortionLevel", Mathf.Lerp(-80f,0.8f, t)); // 0dB = distorsion max
+
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(holdDuration);
+
+        // Retour à la normale
+        timer = 0f;
+        while (timer < rampDuration)
+        {
+            timer += Time.deltaTime;
+            float t = timer / rampDuration;
+
+            source.volume = Mathf.Lerp(1.2f, 0.5f, t);
+            AudioMixer.SetFloat("DistortionLevel", Mathf.Lerp(0f, -80f, t));
+
+            yield return null;
+        }
+
+        AudioMixer.SetFloat("DistortionLevel", -80f);
+    }
+
+
+    private IEnumerator HandleOutsideNoiseCycle(AudioSource source)
+    {
+        while (true)
+        {
+            if (Random.value < 2f / 3f)
+            {
+                Debug.Log(" Distorsion temporaire !");
+                yield return StartCoroutine(OutsideNoiseEffect(source));
+            }
+
+            // Attendre avant le prochain cycle
+            yield return new WaitForSeconds(10f);
+        }
+    }
+
 
     public void SpawnDoorKeyNoiseOnDoor()
     {
@@ -511,7 +629,7 @@ public class SpawnThings : MonoBehaviour
             // Convertir volume [0.0, 1.0] en dB [-80, 0]
             float safeVolume = Mathf.Max(volume, 0.0001f);
             float volumeInDb = Mathf.Log10(safeVolume) * 20f;
-            doorKeyMixer.SetFloat("volume", volumeInDb);
+            AudioMixer.SetFloat("volume", volumeInDb);
 
             // Distorsion aléatoire : 30% de chances d'appliquer un effet
             bool applyDistortion = Random.value < 0.3f;
@@ -519,12 +637,12 @@ public class SpawnThings : MonoBehaviour
             if (applyDistortion)
             {
                 float distortionValue = Random.Range(0.1f, 1f);
-                doorKeyMixer.SetFloat("distortion", distortionValue);
+                AudioMixer.SetFloat("distortion", distortionValue);
                 Debug.Log($"Distorsion activée : {distortionValue}");
             }
             else
             {
-                doorKeyMixer.SetFloat("distortion", 0f);
+                AudioMixer.SetFloat("distortion", 0f);
                 Debug.Log("Distorsion désactivée");
             }
             audioSource.Play();

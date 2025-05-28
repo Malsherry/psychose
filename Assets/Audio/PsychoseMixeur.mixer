@@ -1,5 +1,55 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!244 &-6180637294866361564
+AudioMixerEffectController:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_EffectID: abd82ead8785c7f41b10b47524c909b4
+  m_EffectName: Attenuation
+  m_MixLevel: 0b11c1ada28ab2041bbd6713ab707d18
+  m_Parameters: []
+  m_SendTarget: {fileID: 0}
+  m_EnableWetMix: 0
+  m_Bypass: 0
+--- !u!244 &-5268253015081884011
+AudioMixerEffectController:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_EffectID: 7375ed099e39ab54790c29afd394fa6e
+  m_EffectName: Distortion
+  m_MixLevel: 4b796f6681c886142be032d54007f574
+  m_Parameters:
+  - m_ParameterName: Level
+    m_GUID: a0d3c914cfbb96642a12c697748ca31c
+  m_SendTarget: {fileID: 0}
+  m_EnableWetMix: 0
+  m_Bypass: 0
+--- !u!243 &-5013092835796248431
+AudioMixerGroupController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: bird
+  m_AudioMixer: {fileID: 24100000}
+  m_GroupID: 477d597b29baab94eb0d575f86cb59b7
+  m_Children: []
+  m_Volume: 1747275d098895a44b615be362fd0104
+  m_Pitch: 6cf673b24d8d5704580d3f3f7187f293
+  m_Send: 00000000000000000000000000000000
+  m_Effects:
+  - {fileID: -6180637294866361564}
+  - {fileID: -5268253015081884011}
+  m_UserColorIndex: 0
+  m_Mute: 0
+  m_Solo: 0
+  m_BypassEffects: 0
 --- !u!244 &-4411371643873472922
 AudioMixerEffectController:
   m_ObjectHideFlags: 3
@@ -32,6 +82,8 @@ AudioMixerController:
   m_EnableSuspend: 1
   m_UpdateMode: 0
   m_ExposedParameters:
+  - guid: a0d3c914cfbb96642a12c697748ca31c
+    name: DistortionLevel
   - guid: a3dddf66ceeed174786cdda8322402f2
     name: volume
   - guid: 81ddda8544d87a84ba487d5f0686d9dd
@@ -40,6 +92,7 @@ AudioMixerController:
   - guids:
     - 8bf59be7133efc04986e389f4b198364
     - 60794b2750335e149a4e4322889d4e82
+    - 477d597b29baab94eb0d575f86cb59b7
     name: View
   m_CurrentViewIndex: 0
   m_TargetSnapshot: {fileID: 24500006}
@@ -54,6 +107,7 @@ AudioMixerGroupController:
   m_GroupID: 8bf59be7133efc04986e389f4b198364
   m_Children:
   - {fileID: 493059494347565663}
+  - {fileID: -5013092835796248431}
   m_Volume: 51ac5eab50e31ca41b6bd995e7ed8a42
   m_Pitch: 012bbefa1c958304c92912b8b107f7a1
   m_Send: 00000000000000000000000000000000
@@ -88,6 +142,7 @@ AudioMixerSnapshotController:
   m_AudioMixer: {fileID: 24100000}
   m_SnapshotID: 9831a4da5fa54af4080b488da697fc23
   m_FloatValues:
+    a0d3c914cfbb96642a12c697748ca31c: 0
     81ddda8544d87a84ba487d5f0686d9dd: 0.686
     cc7854eaef9ef1f44a32285d2f794137: 0.87725997
     51ac5eab50e31ca41b6bd995e7ed8a42: -0.025776729
