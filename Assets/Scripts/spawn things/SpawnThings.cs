@@ -93,7 +93,6 @@ public class SpawnThings : MonoBehaviour
 
         Debug.Log("[SpawnThings] Room et anchors initialisés, lancement des spawns.");
 
-
         // Une fois la salle initialisée, lancer les spawns conditionnels
         if (spawnPorteIFMS)
                 SpawnPorteIFMS2();
@@ -102,7 +101,7 @@ public class SpawnThings : MonoBehaviour
             {
                 for (int i = 0; i < nb_frames; i++)
                 {
-                //SpawnWallDecoration();
+                SpawnWallDecoration();
                 Debug.Log("youhou c'est moi le cadre");
                 }
             }
@@ -160,11 +159,12 @@ public class SpawnThings : MonoBehaviour
         Instantiate(cubePrefab, randomPosition, Quaternion.identity);
     }
 
+
     public void SpawnWallDecoration()
     {
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
         Debug.Log("Getting the room: " + room);
-        room.GenerateRandomPositionOnSurface(MRUK.SurfaceType.VERTICAL, minEdgeDistance, new LabelFilter(spawnLabelsWall), out Vector3 pos, out Vector3 norm);
+        room.GenerateRandomPositionOnSurface(MRUK.SurfaceType.VERTICAL, 1, new LabelFilter(spawnLabelsWall), out Vector3 pos, out Vector3 norm);
         Debug.Log($"Spawn position: {pos}, Normal: {norm}");
 
         Vector3 randomPosition = pos + norm * off;
@@ -175,15 +175,17 @@ public class SpawnThings : MonoBehaviour
 
         GameObject wallInstance = Instantiate(wallPrefab, randomPosition, rotation);
 
-        // Activation forcée récursive (pour être sûr)
+        // Activation forcée récursive
         wallInstance.SetActive(true);
-        foreach (var animator in wallInstance.GetComponentsInChildren<Animator>(true))
+
+        // Trouve l'Animator et lance la coroutine
+        Animator animator = wallInstance.GetComponentInChildren<Animator>(true);
+        if (animator != null)
         {
             animator.enabled = true;
-            animator.gameObject.SetActive(true); // just in case
-            Debug.Log($"[SpawnWallDecoration] Animator trouvé: {animator.name} | ActiveInHierarchy: {animator.gameObject.activeInHierarchy}");
+            animator.gameObject.SetActive(true);
+            Debug.Log($"[SpawnWallDecoration] Animator trouvé: {animator.name} et désactivé pour le moment");
         }
-
     }
 
 
@@ -356,7 +358,6 @@ public class SpawnThings : MonoBehaviour
     }
 
 
-
     public void SpawnBoardGames()
     {
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
@@ -364,7 +365,7 @@ public class SpawnThings : MonoBehaviour
 
         MRUKAnchor biggestTable = null;
         float maxSurface = 0f;
-
+        
         foreach (var anchor in room.Anchors)
         {
             Debug.Log($"BoardAnchor: {anchor.name}, {spawnLabelsBoardGames}");
@@ -409,7 +410,6 @@ public class SpawnThings : MonoBehaviour
             Debug.LogWarning("Aucune table détectée pour placer les jeux de société.");
         }
     }
-
 
     public void SpawnFootball()
     {
