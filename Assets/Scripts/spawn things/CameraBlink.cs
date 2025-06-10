@@ -17,7 +17,6 @@ public class CameraBlink : MonoBehaviour
 
     void Start()
     {
-        Debug.Log("blink starting");
         var blinkingObj = transform.Find(blinkingObjectName);
         if (blinkingObj != null)
         {
@@ -58,7 +57,6 @@ public class CameraBlink : MonoBehaviour
                 blinkingMat.color = offColor;
                 blinkingMat.SetColor("_EmissionColor", offEmission);
             }
-            Debug.Log("blink (couleur et émission changées)");
         }
     }
 }

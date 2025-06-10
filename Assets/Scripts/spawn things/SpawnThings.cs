@@ -5,6 +5,7 @@ using System.Collections;
 using Oculus.Interaction.DebugTree;
 using UnityEngine.Audio;
 using System.Collections.Generic;
+using UnityEditor;
 
 public class SpawnThings : MonoBehaviour
 {
@@ -52,6 +53,8 @@ public class SpawnThings : MonoBehaviour
     public MRUKAnchor.SceneLabels spawnLabelsPorteIFMS;
     public MRUKAnchor.SceneLabels window;
     public MRUKAnchor.SceneLabels door_frame; // label de la porte
+    public MRUKAnchor.SceneLabels spawnAvoidLabelsWall;
+    public MRUKAnchor.SceneLabels windowFrameLabel;
 
     [Header("Autres bruits")]
 
@@ -76,6 +79,11 @@ public class SpawnThings : MonoBehaviour
         //StartCoroutine(PlayRandomNoise());
 
     }
+    IEnumerator DelayedSpawnWallDecoration(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        SpawnWallDecoration();
+    }
 
     private IEnumerator WaitForRoomInitialization()
     {
@@ -97,16 +105,74 @@ public class SpawnThings : MonoBehaviour
         if (spawnPorteIFMS)
                 SpawnPorteIFMS2();
 
-            if (spawnWallDecoration)
+
+
+        if (spawnWallDecoration)
+        {
+            if (room != null)
             {
-                for (int i = 0; i < nb_frames; i++)
+                foreach (var anchor in room.GetComponentsInChildren<MRUKAnchor>(true))
                 {
-                SpawnWallDecoration();
-                Debug.Log("youhou c'est moi le cadre");
+                    if (!anchor.HasAnyLabel(windowFrameLabel)) continue;
+
+                    GameObject window = anchor.gameObject;
+
+                    // Chercher ou créer l'enfant ObstacleBox
+                    Transform obstacleBox = window.transform.Find("ObstacleBox");
+                    if (obstacleBox == null)
+                    {
+                        GameObject obstacleBoxGO = new GameObject("ObstacleBox");
+                        obstacleBoxGO.transform.SetParent(window.transform, false);
+                        obstacleBox = obstacleBoxGO.transform;
+                    }
+
+                    // Chercher ou créer l'enfant cube dans ObstacleBox
+                    Transform cubeChild = obstacleBox.Find("Cube");
+                    if (cubeChild == null)
+                    {
+                        GameObject cubeGO = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        cubeGO.name = "Cube";
+                        cubeGO.transform.SetParent(obstacleBox, false);
+
+                        // Désactiver le MeshRenderer
+                        var meshRenderer = cubeGO.GetComponent<MeshRenderer>();
+                        if (meshRenderer != null)
+                            meshRenderer.enabled = false;
+
+                        // Activer le BoxCollider
+                        var boxCollider = cubeGO.GetComponent<BoxCollider>();
+                        if (boxCollider != null)
+                            boxCollider.enabled = true;
+                        Debug.Log($"BoxCollider activé ? {boxCollider.enabled}");
+
+                        Rigidbody rb = cubeGO.GetComponent<Rigidbody>();
+                        if (rb == null)
+                        {
+                            rb = cubeGO.AddComponent<Rigidbody>();
+                            rb.isKinematic = true; // Pour ne pas que la physique le déplace
+                            rb.useGravity = false;
+                        }
+
+                    }
+                    else
+                    {
+                        // Si l'enfant existe déjà, s'assurer que le MeshRenderer est désactivé et le BoxCollider activé
+                        var meshRenderer = cubeChild.GetComponent<MeshRenderer>();
+                        if (meshRenderer != null)
+                            meshRenderer.enabled = false;
+
+                        var boxCollider = cubeChild.GetComponent<BoxCollider>();
+                        if (boxCollider != null)
+                            boxCollider.enabled = true;
+                    }
                 }
             }
 
-            if (spawnFootball)
+            StartCoroutine(DelayedSpawnWallDecoration(1f));
+        }
+
+
+        if (spawnFootball)
                 SpawnFootball();
 
             if (spawnBoardGames)
@@ -160,33 +226,124 @@ public class SpawnThings : MonoBehaviour
     }
 
 
+    public bool drawWallGizmo = true;
+    public static bool avoidSpawnWallDecoration = true;
+    public int maxWallAttempts = 15;
+    public float wallOffset = 0.05f; // `off` dans ton code
+
+
+
     public void SpawnWallDecoration()
     {
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
-        Debug.Log("Getting the room: " + room);
-        room.GenerateRandomPositionOnSurface(MRUK.SurfaceType.VERTICAL, 1, new LabelFilter(spawnLabelsWall), out Vector3 pos, out Vector3 norm);
-        Debug.Log($"Spawn position: {pos}, Normal: {norm}");
-
-        Vector3 randomPosition = pos + norm * off;
-        randomPosition.y = 1.5f;
-        randomPosition.x = randomPosition.x - 0.05f;
-
-        Quaternion rotation = Quaternion.LookRotation(norm) * Quaternion.Euler(0, 90, 0);
-
-        GameObject wallInstance = Instantiate(wallPrefab, randomPosition, rotation);
-
-        // Activation forcée récursive
-        wallInstance.SetActive(true);
-
-        // Trouve l'Animator et lance la coroutine
-        Animator animator = wallInstance.GetComponentInChildren<Animator>(true);
-        if (animator != null)
+        if (room == null)
         {
-            animator.enabled = true;
-            animator.gameObject.SetActive(true);
-            Debug.Log($"[SpawnWallDecoration] Animator trouvé: {animator.name} et désactivé pour le moment");
+            Debug.LogError("MRUKRoom introuvable !");
+            return;
+        }
+
+        BoxCollider prefabCollider = wallPrefab.GetComponentInChildren<BoxCollider>();
+        if (prefabCollider == null)
+        {
+            Debug.LogError("Le prefab mural n'a pas de BoxCollider !");
+            return;
+        }
+
+        Vector3 localCenter = prefabCollider.center;
+        Vector3 localHalfExtents = prefabCollider.size * 0.5f;
+
+        List<GameObject> spawnedDecorations = new List<GameObject>();
+
+        for (int i = 0; i < nb_frames; i++)
+        {
+            Debug.Log("on commence a vouloir mettre le mur cadre");
+            bool spawned = false;
+
+            for (int attempt = 0; attempt < maxWallAttempts; attempt++)
+            {
+                if (!room.GenerateRandomPositionOnSurface(
+                   MRUK.SurfaceType.VERTICAL, 1,
+                   new LabelFilter(spawnLabelsWall),
+                   out Vector3 pos, out Vector3 norm))
+                {
+                    Debug.LogWarning("Décoration murale : impossible de générer une position.");
+                    return;
+                }
+
+                Vector3 randomPosition = pos + norm * wallOffset;
+                randomPosition.y = 1.5f;
+                randomPosition.x -= 0.05f;
+
+                Quaternion rotation = Quaternion.LookRotation(norm) * Quaternion.Euler(0, 90, 0);
+
+                Vector3 worldCenter = randomPosition + rotation * localCenter;
+                Vector3 worldHalfExtents = Vector3.Scale(localHalfExtents, wallPrefab.transform.lossyScale);
+
+                Collider[] overlaps = Physics.OverlapBox(worldCenter, worldHalfExtents, rotation);
+                bool hasBadCollision = false;
+
+                Debug.Log($"mur OverlapBox détecte {overlaps.Length} colliders à la position {worldCenter}");
+
+                foreach (var col in overlaps)
+                {
+                    Debug.Log($"mur OverlapBox détecte collider : {col.name} (Tag: {col.tag})");
+
+                    if (col.transform.IsChildOf(wallPrefab.transform)) continue;
+
+                    // Recherche récursive de MRUKAnchor
+                    Transform t = col.transform;
+                    MRUKAnchor anchor = null;
+                    while (t != null && anchor == null)
+                    {
+                        anchor = t.GetComponent<MRUKAnchor>();
+                        t = t.parent;
+                    }
+
+                    if (anchor != null && anchor.HasAnyLabel(spawnAvoidLabelsWall))
+                    {
+                        Debug.Log($"[mur Tentative {attempt + 1}] Collision avec '{anchor.name}' (label interdit)");
+                        hasBadCollision = true;
+                        break;
+                    }
+
+                    if (col.CompareTag("wall_avoid") || col.CompareTag("Frame"))
+                    {
+                        Debug.Log($"[mur Tentative {attempt + 1}] Collision avec '{col.name}' (tag wall_avoid ou Frame)");
+                        hasBadCollision = true;
+                        break;
+                    }
+                }
+
+                if (!hasBadCollision)
+                {
+                    GameObject wallInstance = Instantiate(wallPrefab, randomPosition, rotation);
+                    wallInstance.SetActive(true);
+                    spawnedDecorations.Add(wallInstance);
+                    spawned = true;
+
+                    Animator animator = wallInstance.GetComponentInChildren<Animator>(true);
+                    if (animator != null)
+                    {
+                        animator.enabled = true;
+                        animator.gameObject.SetActive(true);
+                        Debug.Log($"[SpawnWallDecoration] Animator activé : {animator.name}");
+                    }
+
+                    Debug.Log($"Décoration murale {i + 1} instanciée à la tentative {attempt + 1}");
+                    Debug.Log("déco mur instanciée");
+                    break;
+                }
+            }
+
+            if (!spawned)
+            {
+                Debug.LogWarning($"Décoration murale {i + 1} : aucune position valide trouvée après {maxWallAttempts} tentatives.");
+            }
         }
     }
+
+
+
 
 
     public void SpawnPorteIFMS2()
@@ -361,7 +518,6 @@ public class SpawnThings : MonoBehaviour
     public void SpawnBoardGames()
     {
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
-        Debug.Log("Getting the boardroom: " + room);
 
         MRUKAnchor biggestTable = null;
         float maxSurface = 0f;
@@ -411,16 +567,34 @@ public class SpawnThings : MonoBehaviour
         }
     }
 
+    public int maxAttempts = 20;
+    public bool drawGizmos = true;
+
+    private Vector3 lastGizmoCenter;
+    private Vector3 lastGizmoHalfExtents;
+    private Quaternion lastGizmoRotation = Quaternion.identity;
+    private bool lastGizmoOverlap;
+
     public void SpawnFootball()
     {
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
+        if (room == null)
+        {
+            Debug.LogError("MRUKRoom introuvable !");
+            return;
+        }
 
-        float minDistanceFromAvoidLabels = 0.3f;
-        int maxAttempts = 20;
+        // Récupère un collider dans la hiérarchie
+        BoxCollider prefabCollider = footballPrefab.GetComponentInChildren<BoxCollider>();
+        if (prefabCollider == null)
+        {
+            Debug.LogError("Le prefab du babyfoot n'a pas de BoxCollider !");
+            return;
+        }
 
-        Vector3 pos = Vector3.zero;
-        Vector3 norm = Vector3.up;
-        bool positionFound = false;
+        // Valeurs locales du collider
+        Vector3 localCenter = prefabCollider.center;
+        Vector3 localHalfExtents = prefabCollider.size * 0.5f;
 
         for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
@@ -428,64 +602,84 @@ public class SpawnThings : MonoBehaviour
                 MRUK.SurfaceType.FACING_UP,
                 minEdgeDistance,
                 new LabelFilter(spawnLabelsFootball),
-                out pos,
-                out norm))
+                out Vector3 pos,
+                out Vector3 norm))
             {
-                Debug.LogWarning("Impossible de générer une position pour le babyfoot.");
+                Debug.LogWarning("baby Impossible de générer une position.");
                 return;
             }
+            pos.y = 0f;
+            norm.y = 0f; // On ignore la composante Y de la normale pour le babyfoot
+            Vector3 spawnPos = pos + norm;
 
-            bool isFarEnough = true;
-            foreach (var anchor in room.Anchors)
+            Quaternion baseRotation = Quaternion.LookRotation(Vector3.forward, norm);
+            Quaternion modelCorrection = Quaternion.Euler(-90, 0, 0); // Adapter si besoin
+            Quaternion finalRotation = baseRotation * modelCorrection;
+
+            Vector3 worldCenter = spawnPos + finalRotation * localCenter;
+            Vector3 worldHalfExtents = Vector3.Scale(localHalfExtents, footballPrefab.transform.lossyScale);
+
+            Collider[] overlaps = Physics.OverlapBox(worldCenter, worldHalfExtents, finalRotation);
+            bool hasBadCollision = false;
+
+            foreach (var col in overlaps)
             {
-                if (anchor.HasAnyLabel(avoid) && Vector3.Distance(anchor.transform.position, pos) < minDistanceFromAvoidLabels)
+                if (col.transform.IsChildOf(footballPrefab.transform)) continue;
+
+                MRUKAnchor anchor = col.GetComponentInParent<MRUKAnchor>();
+                if (anchor != null && anchor.HasAnyLabel(avoid))
                 {
-                    isFarEnough = false;
-                    Debug.Log($"Position trop proche d'un élément avec le label à éviter : {anchor.name}");
+                    Debug.Log($"[baby Tentative {attempt + 1}] Collision avec '{anchor.name}'");
+                    hasBadCollision = true;
                     break;
                 }
             }
 
-            if (isFarEnough)
+            // Stocker les gizmos de debug
+            lastGizmoCenter = worldCenter;
+            lastGizmoHalfExtents = worldHalfExtents;
+            lastGizmoRotation = finalRotation;
+            lastGizmoOverlap = hasBadCollision;
+
+            if (!hasBadCollision)
             {
-                positionFound = true;
-                Debug.Log($"Position valide trouvée pour le babyfoot : {pos}, Normale : {norm}");
-                break;
+                GameObject instance = Instantiate(footballPrefab, spawnPos, finalRotation);
+                Debug.Log($"Babyfoot instancié à la tentative {attempt + 1}.");
+                return;
             }
         }
 
-        if (!positionFound)
-        {
-            Debug.LogWarning("Impossible de trouver une position valide pour le babyfoot après plusieurs tentatives.");
-            return;
-        }
-
-        Vector3 randomPosition = pos + norm * off;
-
-        Quaternion baseRotation = Quaternion.LookRotation(Vector3.forward, norm);
-        Quaternion modelCorrection = Quaternion.Euler(-90, 0, 0);
-        Quaternion finalRotation = baseRotation * modelCorrection;
-
-        randomPosition.y = 0.75f;
-
-        GameObject babyfootInstance = Instantiate(footballPrefab, randomPosition, finalRotation);
-        babyfootInstance.tag = "FilterTarget";
-        babyfootInstance.layer = LayerMask.NameToLayer("Interractable");
-
-        // AJOUT D'UN COLLIDER SI AUCUN N'EST PRÉSENT
-        if (babyfootInstance.GetComponent<Collider>() == null)
-        {
-            // Essaye d’ajouter un BoxCollider, ou tu peux changer pour MeshCollider si besoin
-            MeshCollider meshCollider = babyfootInstance.AddComponent<MeshCollider>();
-            meshCollider.convex = true; // Important si l’objet doit détecter des rayons en tant que Rigidbody
-            Debug.Log("Collider ajouté automatiquement au babyfoot.");
-        }
+        Debug.LogWarning("Impossible de trouver une position valide pour le babyfoot après plusieurs tentatives.");
     }
+
+    // Gizmos visibles dans la scène
+    private void OnDrawGizmos()
+    {
+        if (!drawGizmos) return;
+
+        // Vérifie que la rotation est valide avant de l'utiliser
+        if (lastGizmoRotation == Quaternion.identity || lastGizmoRotation.w == 0f)
+        {
+            return; // On évite de faire planter la scène Unity
+        }
+
+        Gizmos.color = lastGizmoOverlap ? Color.red : Color.green;
+        Matrix4x4 rotationMatrix = Matrix4x4.TRS(lastGizmoCenter, lastGizmoRotation, Vector3.one);
+        Gizmos.matrix = rotationMatrix;
+        Gizmos.DrawWireCube(Vector3.zero, lastGizmoHalfExtents * 2);
+    }
+
+
     /// <summary>
     /// Bruits qui apparaissent sur les portes/ fenêtre qui crééent parfois des hallucinations sonores
     /// </summary>
     /// 
 
+
+
+
+    // <summary>
+    /// Partie pour gérer différents bruits dans la scène
     public void SpawnOutsideNoiseOnWindow()
     {
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
@@ -567,7 +761,7 @@ public class SpawnThings : MonoBehaviour
         {
             if (Random.value < 2f / 3f)
             {
-                Debug.Log(" Distorsion temporaire !");
+                //Debug.Log(" Distorsion temporaire !");
                 yield return StartCoroutine(OutsideNoiseEffect(source));
             }
 
@@ -595,7 +789,7 @@ public class SpawnThings : MonoBehaviour
                 soundEmitter.transform.position = soundPosition;
                 soundEmitter.transform.rotation = anchor.transform.rotation;
                 soundEmitter.transform.SetParent(anchor.transform); // Pour qu’il suive la porte
-                Debug.Log("Position du son : " + soundPosition);
+                //Debug.Log("Position du son : " + soundPosition);
 
                 // Ajouter un AudioSource
                 AudioSource audioSource = soundEmitter.AddComponent<AudioSource>();
@@ -610,7 +804,7 @@ public class SpawnThings : MonoBehaviour
                 // Lancer une coroutine pour jouer le son toutes les 40 secondes avec volume aléatoire
                 StartCoroutine(PlayDoorKeyNoisePeriodically(audioSource));
 
-                Debug.Log("Son de clé ajouté à la porte : " + anchor.name);
+                //Debug.Log("Son de clé ajouté à la porte : " + anchor.name);
                 return; // On ne prend que la première porte
             }
         }

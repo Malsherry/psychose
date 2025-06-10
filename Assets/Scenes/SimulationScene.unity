@@ -362,7 +362,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5cc5c234723e3a54d8dd09b131117743, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _meshType: 4
+  _meshType: 0
 --- !u!114 &46789594
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -393,7 +393,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2609c54f376cffc4da1ab9401cc1a36f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _skeletonType: 4
+  _skeletonType: 0
   _updateRootPose: 0
   _updateRootScale: 1
   _enablePhysicsCapsules: 0
@@ -1842,7 +1842,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5cc5c234723e3a54d8dd09b131117743, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _meshType: 5
+  _meshType: 1
 --- !u!114 &274844436
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1873,7 +1873,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2609c54f376cffc4da1ab9401cc1a36f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _skeletonType: 5
+  _skeletonType: 1
   _updateRootPose: 0
   _updateRootScale: 1
   _enablePhysicsCapsules: 0
@@ -2284,7 +2284,7 @@ AudioSource:
   m_audioClip: {fileID: 8300000, guid: 323084ae6636e7c4c9d2429f6a9869f0, type: 3}
   m_Resource: {fileID: 8300000, guid: 323084ae6636e7c4c9d2429f6a9869f0, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 1
+  m_Volume: 0.201
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -3335,13 +3335,13 @@ MonoBehaviour:
   noiseMaxInterval: 90
   cameraPrefab: {fileID: 919132149155446097, guid: 92947f46ceea8c246aa5c8f2f170de3f, type: 3}
   cubePrefab: {fileID: 4604106323707863612, guid: cad95a4dc04c7f6468455c15f99d1cf9, type: 3}
-  wallPrefab: {fileID: 7076965810365635954, guid: 331382df13e031b49aa7bc1605c88dac, type: 3}
-  footballPrefab: {fileID: 919132149155446097, guid: d245cffe6b30cbc4db728b12dfe63123, type: 3}
+  wallPrefab: {fileID: 6859485909347316049, guid: 6dd656e83751f2e4ea3b141ca33e61be, type: 3}
+  footballPrefab: {fileID: 8638260277462896735, guid: a10a372febbb06d4e8f97a00fce737ac, type: 3}
   BoardGames: {fileID: 6957166775837258356, guid: 818c67956aa1bcd4f8a9658d23d3fe64, type: 3}
-  porteIFMS: {fileID: 919132149155446097, guid: 7190c16c77c7342418f2450f70a5ccd5, type: 3}
+  porteIFMS: {fileID: 6286098589619147119, guid: 1377f72789ef116499288a656750904d, type: 3}
   spawnTimer: 20
-  nb_frames: 1
-  minEdgeDistance: 2
+  nb_frames: 5
+  minEdgeDistance: 1
   spawnLabelsCamera: 2
   spawnLabels: 1
   spawnLabelsWall: 4
@@ -3351,11 +3351,18 @@ MonoBehaviour:
   spawnLabelsPorteIFMS: 4
   window: 64
   door_frame: 32
+  spawnAvoidLabelsWall: 8288
+  windowFrameLabel: 96
   OutsideNoise: {fileID: 8300000, guid: 2daca1174bc2a794da47de0641fbe0cc, type: 3}
   DoorKeyNoise: {fileID: 8300000, guid: ba8d19a2ee5429049bed55dc3155da29, type: 3}
   doorKeyMixerGroup: {fileID: 493059494347565663, guid: cf1923fa282c75d4c864a923f08bc46d, type: 2}
   AudioMixer: {fileID: 24100000, guid: cf1923fa282c75d4c864a923f08bc46d, type: 2}
   OutsideMixerGroup: {fileID: -5013092835796248431, guid: cf1923fa282c75d4c864a923f08bc46d, type: 2}
+  drawWallGizmo: 1
+  maxWallAttempts: 15
+  wallOffset: 0.05
+  maxAttempts: 20
+  drawGizmos: 1
 --- !u!114 &512977178
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7351,7 +7358,7 @@ Transform:
   m_GameObject: {fileID: 1222898443}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

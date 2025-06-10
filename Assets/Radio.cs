@@ -37,7 +37,6 @@ public class Radio : MonoBehaviour
         }
 
         audioSource.clip = playlist[currentIndex];
-        audioSource.volume = 0.5f; // Volume à 50%
         audioSource.Play();
     }
 }
