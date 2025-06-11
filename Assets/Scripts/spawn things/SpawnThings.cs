@@ -9,6 +9,8 @@ using UnityEditor;
 
 public class SpawnThings : MonoBehaviour
 {
+    private List<Collider> alreadySpawnedColliders = new List<Collider>();
+
     public static bool spawnCamera = true; // pour faire spawn la caméra
     public static bool spawnPorteIFMS = true;
     public static bool spawnWallDecoration = true;
@@ -40,6 +42,8 @@ public class SpawnThings : MonoBehaviour
     public int nb_frames; // nombre de fois qu'on fait spawn de l'art mural
     private float off = 0f;
 
+
+
     [Header("Scene labels")]
 
     // paramètres dont on a besoin pour spawn des mesh aléatoirement dans la pièce
@@ -68,6 +72,7 @@ public class SpawnThings : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        alreadySpawnedColliders.Clear(); // reset before new spawn session
         StartCoroutine(WaitForRoomInitialization());
         // Préparer la source audio pour le bruit aléatoire
         randomNoiseSource = gameObject.AddComponent<AudioSource>();
@@ -102,11 +107,10 @@ public class SpawnThings : MonoBehaviour
         Debug.Log("[SpawnThings] Room et anchors initialisés, lancement des spawns.");
 
         // Une fois la salle initialisée, lancer les spawns conditionnels
-        if (spawnPorteIFMS)
-                SpawnPorteIFMS2();
 
 
 
+        // A FAIRE: ajuster le cube, vérifier que ca marche sur les portes, refaire marcher la détection sur le mesh de porte ifms, faire marcher la détection entre deux cadres instanciés
         if (spawnWallDecoration)
         {
             if (room != null)
@@ -170,7 +174,8 @@ public class SpawnThings : MonoBehaviour
 
             StartCoroutine(DelayedSpawnWallDecoration(1f));
         }
-
+        if (spawnPorteIFMS)
+            SpawnDoor();
 
         if (spawnFootball)
                 SpawnFootball();
@@ -231,6 +236,366 @@ public class SpawnThings : MonoBehaviour
     public int maxWallAttempts = 15;
     public float wallOffset = 0.05f; // `off` dans ton code
 
+    //old function that works but they're kinda messy ngl
+    /*
+
+     public void SpawnWallDecoration()
+     {
+         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
+         if (room == null)
+         {
+             Debug.LogError("MRUKRoom introuvable !");
+             return;
+         }
+
+         BoxCollider prefabCollider = wallPrefab.GetComponentInChildren<BoxCollider>();
+         if (prefabCollider == null)
+         {
+             Debug.LogError("Le prefab mural n'a pas de BoxCollider !");
+             return;
+         }
+
+         Vector3 localCenter = prefabCollider.center;
+         Vector3 localHalfExtents = prefabCollider.size * 0.5f;
+
+         List<GameObject> spawnedDecorations = new List<GameObject>();
+
+         for (int i = 0; i < nb_frames; i++)
+         {
+             Debug.Log("on commence a vouloir mettre le mur cadre");
+             bool spawned = false;
+
+             for (int attempt = 0; attempt < maxWallAttempts; attempt++)
+             {
+                 if (!room.GenerateRandomPositionOnSurface(
+                    MRUK.SurfaceType.VERTICAL, 1,
+                    new LabelFilter(spawnLabelsWall),
+                    out Vector3 pos, out Vector3 norm))
+                 {
+                     Debug.LogWarning("Décoration murale : impossible de générer une position.");
+                     return;
+                 }
+
+                 Vector3 randomPosition = pos + norm * wallOffset;
+                 randomPosition.y = 1.5f;
+                 randomPosition.x -= 0.05f;
+
+                 Quaternion rotation = Quaternion.LookRotation(norm) * Quaternion.Euler(0, 90, 0);
+
+                 Vector3 worldCenter = randomPosition + rotation * localCenter;
+                 Vector3 worldHalfExtents = Vector3.Scale(localHalfExtents, wallPrefab.transform.lossyScale);
+
+                 Collider[] overlaps = Physics.OverlapBox(worldCenter, worldHalfExtents, rotation);
+                 bool hasBadCollision = false;
+
+                 Debug.Log($"mur OverlapBox détecte {overlaps.Length} colliders à la position {worldCenter}");
+
+                 foreach (var col in overlaps)
+                 {
+                     Debug.Log($"mur OverlapBox détecte collider : {col.name} (Tag: {col.tag})");
+
+                     if (col.transform.IsChildOf(wallPrefab.transform)) continue;
+
+                     // Recherche récursive de MRUKAnchor
+                     Transform t = col.transform;
+                     MRUKAnchor anchor = null;
+                     while (t != null && anchor == null)
+                     {
+                         anchor = t.GetComponent<MRUKAnchor>();
+                         t = t.parent;
+                     }
+
+                     if (anchor != null && anchor.HasAnyLabel(spawnAvoidLabelsWall))
+                     {
+                         Debug.Log($"[mur Tentative {attempt + 1}] Collision avec '{anchor.name}' (label interdit)");
+                         hasBadCollision = true;
+                         break;
+                     }
+
+                     if (col.CompareTag("wall_avoid") || col.CompareTag("Frame"))
+                     {
+                         Debug.Log($"[mur Tentative {attempt + 1}] Collision avec '{col.name}' (tag wall_avoid ou Frame)");
+                         hasBadCollision = true;
+                         break;
+                     }
+                 }
+
+                 if (!hasBadCollision)
+                 {
+                     GameObject wallInstance = Instantiate(wallPrefab, randomPosition, rotation);
+                     wallInstance.SetActive(true);
+                     spawnedDecorations.Add(wallInstance);
+                     spawned = true;
+
+                     Animator animator = wallInstance.GetComponentInChildren<Animator>(true);
+                     if (animator != null)
+                     {
+                         animator.enabled = true;
+                         animator.gameObject.SetActive(true);
+                         Debug.Log($"[SpawnWallDecoration] Animator activé : {animator.name}");
+                     }
+
+                     Debug.Log($"Décoration murale {i + 1} instanciée à la tentative {attempt + 1}");
+                     Debug.Log("déco mur instanciée");
+                     break;
+                 }
+             }
+
+             if (!spawned)
+             {
+                 Debug.LogWarning($"Décoration murale {i + 1} : aucune position valide trouvée après {maxWallAttempts} tentatives.");
+             }
+         }
+     }
+
+
+     public void SpawnPorteIFMS2()
+     {
+         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
+         if (room == null)
+         {
+             Debug.LogError("MRUKRoom introuvable !");
+             return;
+         }
+
+         BoxCollider doorCollider = porteIFMS.GetComponentInChildren<BoxCollider>();
+         if (doorCollider == null)
+         {
+             Debug.LogError("Le prefab de porte n'a pas de BoxCollider !");
+             return;
+         }
+
+         Vector3 localCenter = doorCollider.center;
+         Vector3 localHalfExtents = doorCollider.size * 0.5f;
+
+         for (int attempt = 0; attempt < maxWallAttempts; attempt++)
+         {
+             if (!room.GenerateRandomPositionOnSurface(
+                 MRUK.SurfaceType.VERTICAL,
+                 minEdgeDistance,
+                 new LabelFilter(spawnLabelsPorteIFMS),
+                 out Vector3 pos,
+                 out Vector3 norm))
+             {
+                 Debug.LogWarning("Porte : Impossible de générer une position.");
+                 return;
+             }
+
+             // Slightly offset the door forward and adjust vertical height
+             Vector3 offsetPosition = pos + norm * wallOffset;
+             offsetPosition.y = 0.05f;
+
+             Quaternion rotation = Quaternion.LookRotation(norm) * Quaternion.Euler(0, 90, 0);
+
+             // Compute world-space bounds of the door
+             Vector3 worldCenter = offsetPosition + rotation * localCenter;
+             Vector3 worldHalfExtents = Vector3.Scale(localHalfExtents, porteIFMS.transform.lossyScale);
+
+             Collider[] overlaps = Physics.OverlapBox(worldCenter, worldHalfExtents, rotation);
+             bool hasBadCollision = false;
+
+             foreach (var col in overlaps)
+             {
+                 if (col.transform.IsChildOf(porteIFMS.transform)) continue;
+
+                 // Check MRUKAnchor label rejection
+                 Transform t = col.transform;
+                 MRUKAnchor anchor = null;
+                 while (t != null && anchor == null)
+                 {
+                     anchor = t.GetComponent<MRUKAnchor>();
+                     t = t.parent;
+                 }
+
+                 if (anchor != null && anchor.HasAnyLabel(avoid))
+                 {
+                     hasBadCollision = true;
+                     Debug.Log($"[Porte Tentative {attempt + 1}] Collision avec '{anchor.name}' (label interdit)");
+                     break;
+                 }
+
+                 // Optional: tag-based blocking
+                 if (col.CompareTag("wall_avoid") || col.CompareTag("Frame"))
+                 {
+                     hasBadCollision = true;
+                     Debug.Log($"[Porte Tentative {attempt + 1}] Collision avec tag bloquant : {col.name}");
+                     break;
+                 }
+             }
+
+             if (!hasBadCollision)
+             {
+                 GameObject doorInstance = Instantiate(porteIFMS, offsetPosition, rotation);
+                 doorInstance.SetActive(true);
+                 Debug.Log($"///////////////////PORTE INSTANCIEE TERMINADO à la tentative {attempt + 1}////////////////////////////");
+                 return;
+             }
+         }
+
+         Debug.LogWarning("Porte : Aucune position valide trouvée après plusieurs tentatives.");
+     }
+     */
+
+
+    public bool TrySpawnVerticalPrefab(
+      GameObject prefab,
+      MRUKRoom room,
+      LabelFilter placementLabels,
+      List<string> avoidTags,
+      float minEdgeDist,
+      float depthOffset,
+      float verticalOffset,
+      int maxAttempts,
+      out GameObject spawned)
+    {
+        spawned = null;
+
+        if (prefab == null || room == null)
+        {
+            Debug.LogError("TrySpawnVerticalPrefab: prefab ou room est null.");
+            return false;
+        }
+
+        BoxCollider prefabCollider = prefab.GetComponentInChildren<BoxCollider>();
+        if (prefabCollider == null)
+        {
+            Debug.LogError("TrySpawnVerticalPrefab: Le prefab n'a pas de BoxCollider !");
+            return false;
+        }
+
+        Vector3 localCenter = prefabCollider.center;
+        Vector3 localHalfExtents = prefabCollider.size * 0.5f;
+
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
+        {
+            if (!room.GenerateRandomPositionOnSurface(
+                MRUK.SurfaceType.VERTICAL,
+                minEdgeDist,
+                placementLabels,
+                out Vector3 pos,
+                out Vector3 norm))
+            {
+                Debug.LogWarning("TrySpawnVerticalPrefab: Pas de position murale trouvée.");
+                return false;
+            }
+
+            Vector3 spawnPos = pos + norm * depthOffset;
+            spawnPos.y = verticalOffset;
+
+            Quaternion rotation = Quaternion.LookRotation(norm) * Quaternion.Euler(0, 90, 0);
+            Vector3 worldCenter = spawnPos + rotation * localCenter;
+            Vector3 worldHalfExtents = Vector3.Scale(localHalfExtents, prefab.transform.lossyScale);
+
+            Collider[] overlaps = Physics.OverlapBox(worldCenter, worldHalfExtents, rotation);
+            bool badCollision = false;
+
+            foreach (var col in overlaps)
+            {
+                if (col.transform.IsChildOf(prefab.transform)) continue;
+
+                foreach (string avoidTag in avoidTags)
+                {
+                    if (col.CompareTag(avoidTag))
+                    {
+                        badCollision = true;
+                        Debug.Log($"[Spawn] Collision avec tag bloquant: {col.name}");
+                        break;
+                    }
+                }
+
+                if (badCollision) break;
+
+                MRUKAnchor anchor = col.GetComponentInParent<MRUKAnchor>();
+                if (anchor != null && anchor.HasAnyLabel(spawnAvoidLabelsWall))
+                {
+                    badCollision = true;
+                    Debug.Log($"[Spawn] Collision avec anchor label interdit: {anchor.name}");
+                    break;
+                }
+            }
+
+            //  Extra custom overlap check with previous spawns
+            if (!badCollision)
+            {
+                // Create a temporary clone collider for penetration testing
+                GameObject temp = new GameObject("TempCheck");
+                temp.hideFlags = HideFlags.HideAndDontSave;
+                BoxCollider tempCol = temp.AddComponent<BoxCollider>();
+                tempCol.size = prefabCollider.size;
+                tempCol.center = prefabCollider.center;
+
+                temp.transform.position = worldCenter;
+                temp.transform.rotation = rotation;
+                temp.transform.localScale = prefab.transform.lossyScale;
+
+                foreach (Collider previousCol in alreadySpawnedColliders)
+                {
+                    if (Physics.ComputePenetration(
+                        tempCol, temp.transform.position, temp.transform.rotation,
+                        previousCol, previousCol.transform.position, previousCol.transform.rotation,
+                        out Vector3 dir, out float dist))
+                    {
+                        Debug.Log($"[Spawn] ComputePenetration: Overlap detected with {previousCol.name} (dist: {dist})");
+                        badCollision = true;
+                        break;
+                    }
+                }
+
+                GameObject.DestroyImmediate(temp); // Clean up test object
+            }
+
+            if (!badCollision)
+            {
+                spawned = GameObject.Instantiate(prefab, spawnPos, rotation);
+                spawned.SetActive(true);
+
+                alreadySpawnedColliders.AddRange(spawned.GetComponentsInChildren<Collider>());
+                Debug.Log($"[Spawn] Objet instancié avec succès à la tentative {attempt + 1}");
+                return true;
+            }
+        }
+
+        Debug.LogWarning("[Spawn] Aucune position valide trouvée après toutes les tentatives.");
+        return false;
+    }
+
+
+    public void SpawnDoor()
+    {
+        MRUKRoom room = MRUK.Instance.GetCurrentRoom();
+        if (room == null)
+        {
+            Debug.LogError("SpawnDoor: MRUKRoom introuvable !");
+            return;
+        }
+
+        LabelFilter placementLabels = new LabelFilter(spawnLabelsPorteIFMS);
+
+        List<string> avoidTags = new List<string>
+    {
+        "Frame",
+        "wall_avoid"
+    };
+
+        if (TrySpawnVerticalPrefab(
+            porteIFMS,
+            room,
+            placementLabels,
+            avoidTags,
+            minEdgeDistance,
+            wallOffset,
+            0.05f, // vertical offset for door
+            maxWallAttempts,
+            out GameObject spawnedDoor))
+        {
+            Debug.Log("SpawnDoor: Porte instanciée avec succès !");
+        }
+        else
+        {
+            Debug.LogWarning("SpawnDoor: Aucune porte n'a pu être instanciée.");
+        }
+    }
+
 
 
     public void SpawnWallDecoration()
@@ -238,248 +603,48 @@ public class SpawnThings : MonoBehaviour
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
         if (room == null)
         {
-            Debug.LogError("MRUKRoom introuvable !");
+            Debug.LogError("SpawnWallDecoration: MRUKRoom introuvable !");
             return;
         }
 
-        BoxCollider prefabCollider = wallPrefab.GetComponentInChildren<BoxCollider>();
-        if (prefabCollider == null)
-        {
-            Debug.LogError("Le prefab mural n'a pas de BoxCollider !");
-            return;
-        }
+        LabelFilter placementLabels = new LabelFilter(spawnLabelsWall);
 
-        Vector3 localCenter = prefabCollider.center;
-        Vector3 localHalfExtents = prefabCollider.size * 0.5f;
-
-        List<GameObject> spawnedDecorations = new List<GameObject>();
+        List<string> avoidTags = new List<string>
+    {
+        "Frame",
+        "wall_avoid"
+    };
 
         for (int i = 0; i < nb_frames; i++)
         {
-            Debug.Log("on commence a vouloir mettre le mur cadre");
-            bool spawned = false;
-
-            for (int attempt = 0; attempt < maxWallAttempts; attempt++)
-            {
-                if (!room.GenerateRandomPositionOnSurface(
-                   MRUK.SurfaceType.VERTICAL, 1,
-                   new LabelFilter(spawnLabelsWall),
-                   out Vector3 pos, out Vector3 norm))
-                {
-                    Debug.LogWarning("Décoration murale : impossible de générer une position.");
-                    return;
-                }
-
-                Vector3 randomPosition = pos + norm * wallOffset;
-                randomPosition.y = 1.5f;
-                randomPosition.x -= 0.05f;
-
-                Quaternion rotation = Quaternion.LookRotation(norm) * Quaternion.Euler(0, 90, 0);
-
-                Vector3 worldCenter = randomPosition + rotation * localCenter;
-                Vector3 worldHalfExtents = Vector3.Scale(localHalfExtents, wallPrefab.transform.lossyScale);
-
-                Collider[] overlaps = Physics.OverlapBox(worldCenter, worldHalfExtents, rotation);
-                bool hasBadCollision = false;
-
-                Debug.Log($"mur OverlapBox détecte {overlaps.Length} colliders à la position {worldCenter}");
-
-                foreach (var col in overlaps)
-                {
-                    Debug.Log($"mur OverlapBox détecte collider : {col.name} (Tag: {col.tag})");
-
-                    if (col.transform.IsChildOf(wallPrefab.transform)) continue;
-
-                    // Recherche récursive de MRUKAnchor
-                    Transform t = col.transform;
-                    MRUKAnchor anchor = null;
-                    while (t != null && anchor == null)
-                    {
-                        anchor = t.GetComponent<MRUKAnchor>();
-                        t = t.parent;
-                    }
-
-                    if (anchor != null && anchor.HasAnyLabel(spawnAvoidLabelsWall))
-                    {
-                        Debug.Log($"[mur Tentative {attempt + 1}] Collision avec '{anchor.name}' (label interdit)");
-                        hasBadCollision = true;
-                        break;
-                    }
-
-                    if (col.CompareTag("wall_avoid") || col.CompareTag("Frame"))
-                    {
-                        Debug.Log($"[mur Tentative {attempt + 1}] Collision avec '{col.name}' (tag wall_avoid ou Frame)");
-                        hasBadCollision = true;
-                        break;
-                    }
-                }
-
-                if (!hasBadCollision)
-                {
-                    GameObject wallInstance = Instantiate(wallPrefab, randomPosition, rotation);
-                    wallInstance.SetActive(true);
-                    spawnedDecorations.Add(wallInstance);
-                    spawned = true;
-
-                    Animator animator = wallInstance.GetComponentInChildren<Animator>(true);
-                    if (animator != null)
-                    {
-                        animator.enabled = true;
-                        animator.gameObject.SetActive(true);
-                        Debug.Log($"[SpawnWallDecoration] Animator activé : {animator.name}");
-                    }
-
-                    Debug.Log($"Décoration murale {i + 1} instanciée à la tentative {attempt + 1}");
-                    Debug.Log("déco mur instanciée");
-                    break;
-                }
-            }
-
-            if (!spawned)
-            {
-                Debug.LogWarning($"Décoration murale {i + 1} : aucune position valide trouvée après {maxWallAttempts} tentatives.");
-            }
-        }
-    }
-
-
-
-
-
-    public void SpawnPorteIFMS2()
-    {
-        MRUKRoom room = MRUK.Instance.GetCurrentRoom();
-
-        float minDistanceFromAvoidLabels = 1.3f; // Distance minimale à respecter
-        int maxAttempts = 40; // Nombre maximum de tentatives pour trouver une position valide
-
-        Vector3 pos = Vector3.zero;
-        Vector3 norm = Vector3.forward;
-        bool positionFound = false;
-
-        Vector3 porteSize = new Vector3(1.0f, 2.0f, 0.1f); // Dimensions approximatives de la porte (largeur, hauteur, profondeur)
-
-        for (int attempt = 0; attempt < maxAttempts; attempt++)
-        {
-            // Génère une position sur un mur (VERTICAL)
-            if (!room.GenerateRandomPositionOnSurface(
-                MRUK.SurfaceType.VERTICAL,
+            if (TrySpawnVerticalPrefab(
+                wallPrefab,
+                room,
+                placementLabels,
+                avoidTags,
                 minEdgeDistance,
-                new LabelFilter(spawnLabelsPorteIFMS),
-                out pos,
-                out norm))
+                wallOffset,
+                1.5f, // vertical offset for wall frame
+                maxWallAttempts,
+                out GameObject decoration))
             {
-                Debug.LogWarning("Porte : Impossible de générer une position (aucun mur trouvé)");
-                return;
-            }
-
-            // Vérifie la distance par rapport aux éléments avec les labels à éviter
-            bool isFarEnough = true;
-
-            foreach (var anchor in room.Anchors)
-            {
-                // Ignore les objets avec le label "wall_face"
-                if (anchor.HasAnyLabel(MRUKAnchor.SceneLabels.WALL_FACE))
-                    continue;
-
-                if (!anchor.HasAnyLabel(avoid))
-                    continue;
-
-                // Vérifie si l'objet a un ou plusieurs colliders
-                Collider[] colliders = anchor.GetComponentsInChildren<Collider>(true);
-                if (colliders.Length > 0)
+                Animator animator = decoration.GetComponentInChildren<Animator>(true);
+                if (animator != null)
                 {
-                    foreach (var col in colliders)
-                    {
-                        float dist;
-
-                        // Si le collider est compatible avec ClosestPoint, utilisez-le
-                        if (col is BoxCollider || col is SphereCollider || col is CapsuleCollider || (col is MeshCollider meshCol && meshCol.convex))
-                        {
-                            dist = Vector3.Distance(col.ClosestPoint(pos), pos);
-                        }
-                        else
-                        {
-                            // Sinon, utilisez une vérification de distance simple avec transform.position
-                            dist = Vector3.Distance(anchor.transform.position, pos);
-                        }
-
-                        if (dist < minDistanceFromAvoidLabels)
-                        {
-                            isFarEnough = false;
-                            //Debug.Log($"Porte : Trop proche de {anchor.name} via {col.name} (dist : {dist})");
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    // Cas fallback : pas de collider, vérification simple avec transform.position
-                    float fallbackDist = Vector3.Distance(anchor.transform.position, pos);
-                    if (fallbackDist < minDistanceFromAvoidLabels)
-                    {
-                        isFarEnough = false;
-                        Debug.Log($"Porte : Trop proche de {anchor.name} (fallback sans collider, dist : {fallbackDist})");
-                        break;
-                    }
+                    animator.enabled = true;
+                    animator.gameObject.SetActive(true);
                 }
 
-                if (!isFarEnough)
-                    break;
+                Debug.Log($"SpawnWallDecoration: Décoration {i + 1} instanciée.");
             }
-
-            // Vérifie les collisions avec d'autres objets dans la zone de la porte
-            if (isFarEnough)
+            else
             {
-                Collider[] overlapColliders = Physics.OverlapBox(
-                    pos, // Centre de la zone
-                    porteSize / 2, // Demi-dimensions de la porte
-                    Quaternion.LookRotation(norm) // Orientation de la porte
-                );
-
-                if (overlapColliders.Length > 0)
-                {
-                    foreach (var overlapCollider in overlapColliders)
-                    {
-                        // Vérifie si l'objet chevauché a un label dans "avoid"
-                        MRUKAnchor anchor = overlapCollider.GetComponentInParent<MRUKAnchor>();
-                        if (anchor != null && anchor.HasAnyLabel(avoid))
-                        {
-                            isFarEnough = false;
-                            Debug.Log($"Porte : Position rejetée car elle chevauche un objet à éviter : {overlapCollider.name} (parent : {overlapCollider.transform.parent?.name})");
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (isFarEnough)
-            {
-                positionFound = true;
-                Debug.Log($"Porte : Position valide trouvée : {pos}, Normale : {norm}");
-                break;
+                Debug.LogWarning($"SpawnWallDecoration: Échec pour la décoration {i + 1}.");
             }
         }
-
-        if (!positionFound)
-        {
-            Debug.LogWarning("Porte : Aucune position valide trouvée après plusieurs tentatives.");
-            return;
-        }
-
-        float depthOffset = 0.01f; // Distance pour ressortir un peu la porte
-
-        // Le "x" de la porte doit pointer dans la direction +norm
-        Quaternion rotation = Quaternion.LookRotation(Vector3.Cross(Vector3.up, norm), Vector3.up);
-
-        // On pousse un peu dans la direction +norm pour ressortir du mur
-        Vector3 spawnPosition = pos + (norm * depthOffset);
-        spawnPosition.y = 0.05f; // Ajustement vertical
-
-        Instantiate(porteIFMS, spawnPosition, rotation);
-
-
     }
+
+
 
 
     public void SpawnCamera()
