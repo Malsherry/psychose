@@ -8,6 +8,7 @@ TagManager:
   - FilterTarget
   - Frame
   - wall_avoid
+  - Menu
   layers:
   - Default
   - TransparentFX

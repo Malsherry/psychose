@@ -3296,8 +3296,9 @@ GameObject:
   - component: {fileID: 512977177}
   - component: {fileID: 512977178}
   - component: {fileID: 512977179}
+  - component: {fileID: 512977180}
   m_Layer: 0
-  m_Name: CubeSpawner
+  m_Name: Spawner_global
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3311,7 +3312,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 512977174}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -3340,7 +3341,7 @@ MonoBehaviour:
   BoardGames: {fileID: 6957166775837258356, guid: 818c67956aa1bcd4f8a9658d23d3fe64, type: 3}
   porteIFMS: {fileID: 6286098589619147119, guid: 1377f72789ef116499288a656750904d, type: 3}
   spawnTimer: 20
-  nb_frames: 5
+  nb_frames: 2
   minEdgeDistance: 1
   spawnLabelsCamera: 2
   spawnLabels: 1
@@ -3394,6 +3395,20 @@ MonoBehaviour:
   off: 0.1
   minEdgeDistance: 0.3
   spawnLabels: 1
+--- !u!114 &512977180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 512977174}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: debe8aef56695074e84fa50585991c26, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spawnThings: {fileID: 512977177}
+  wallPrefab: {fileID: 6005414483665618025, guid: 24e1a99f683ebd343ae178c8dce5cba0, type: 3}
 --- !u!1 &517424773
 GameObject:
   m_ObjectHideFlags: 0
@@ -11221,6 +11236,7 @@ GameObject:
   - component: {fileID: 1964602099}
   - component: {fileID: 1964602098}
   - component: {fileID: 1964602100}
+  - component: {fileID: 1964602101}
   m_Layer: 0
   m_Name: GazeDetector
   m_TagString: Untagged
@@ -11281,6 +11297,28 @@ MonoBehaviour:
   cooldownTime: 10
   animationName: root|rootAction
   paperNoise: {fileID: 8300000, guid: 3ef4d6762680b0540844a0a82c0e9532, type: 3}
+--- !u!114 &1964602101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1964602097}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a60526a8fa672a42815c2a817a22836, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetTag: Menu
+  gazeTimeRequired: 6
+  cooldownTime: 15
+  primarySounds:
+  - {fileID: 8300000, guid: 234b96f858c870a4f97175bcfa6f2ccb, type: 3}
+  - {fileID: 8300000, guid: 60d76465cda99d24ea0b79e1bd5d9c6b, type: 3}
+  - {fileID: 8300000, guid: 2839dfcb77747534f83f386074f60328, type: 3}
+  - {fileID: 8300000, guid: c4ff0a367cb975745824c4ec7e4c6278, type: 3}
+  secondarySounds:
+  - {fileID: 8300000, guid: bd0005bbaf66d5642aab652d2f190778, type: 3}
 --- !u!1 &1964672168
 GameObject:
   m_ObjectHideFlags: 0

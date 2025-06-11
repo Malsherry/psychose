@@ -35,7 +35,7 @@ public class Radio : MonoBehaviour
         {
             currentIndex = (currentIndex + 1) % playlist.Length;
         }
-
+        audioSource.volume = 0.1f; // Volume réduit pour un fond sonore
         audioSource.clip = playlist[currentIndex];
         audioSource.Play();
     }
