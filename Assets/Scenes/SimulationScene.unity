@@ -3222,6 +3222,7 @@ GameObject:
   - component: {fileID: 508054982}
   - component: {fileID: 508054985}
   - component: {fileID: 508054984}
+  - component: {fileID: 508054986}
   m_Layer: 0
   m_Name: Spawner
   m_TagString: Untagged
@@ -3291,6 +3292,20 @@ MonoBehaviour:
   lastGizmoHalfExtents: {x: 0, y: 0, z: 0}
   lastGizmoRotation: {x: 0, y: 0, z: 0, w: 0}
   lastGizmoOverlap: 0
+--- !u!114 &508054986
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 508054980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13cd8542ddac5af4389b852abaf7f6c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  glassPrefab: {fileID: 7378632723343522919, guid: 95bce4fb60cd95441b50d9f99504e6c6, type: 3}
+  spawnLabelsTable: 8
 --- !u!1 &512977174
 GameObject:
   m_ObjectHideFlags: 0
@@ -3305,7 +3320,7 @@ GameObject:
   - component: {fileID: 512977179}
   - component: {fileID: 512977180}
   m_Layer: 0
-  m_Name: Spawner_global
+  m_Name: WallSpawner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3344,6 +3359,7 @@ MonoBehaviour:
   cubePrefab: {fileID: 4604106323707863612, guid: cad95a4dc04c7f6468455c15f99d1cf9, type: 3}
   wallPrefab: {fileID: 6859485909347316049, guid: 6dd656e83751f2e4ea3b141ca33e61be, type: 3}
   porteIFMS: {fileID: 6286098589619147119, guid: 1377f72789ef116499288a656750904d, type: 3}
+  windowSpotsPrefab: {fileID: 4604106323707863612, guid: cad95a4dc04c7f6468455c15f99d1cf9, type: 3}
   minEdgeDistance: 1
   spawnLabelsCamera: 2
   spawnLabels: 1
@@ -3352,6 +3368,8 @@ MonoBehaviour:
   spawnLabelsPorteIFMS: 4
   spawnAvoidLabelsWall: 8288
   windowFrameLabel: 96
+  spawnLabelWindowSpots: 64
+  animationSpeed: 0.3
   drawWallGizmo: 1
   maxWallAttempts: 15
   wallOffset: 0.05
@@ -11230,6 +11248,7 @@ GameObject:
   - component: {fileID: 1964602098}
   - component: {fileID: 1964602100}
   - component: {fileID: 1964602101}
+  - component: {fileID: 1964602102}
   m_Layer: 0
   m_Name: GazeDetector
   m_TagString: Untagged
@@ -11312,6 +11331,24 @@ MonoBehaviour:
   - {fileID: 8300000, guid: c4ff0a367cb975745824c4ec7e4c6278, type: 3}
   secondarySounds:
   - {fileID: 8300000, guid: bd0005bbaf66d5642aab652d2f190778, type: 3}
+--- !u!114 &1964602102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1964602097}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29eaf9427eacf814ea3e41f3354cf610, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetTag: glass
+  gazeTimeRequired: 2
+  delayBeforeAnimation: 5
+  cooldownTime: 15
+  animationName: Armature|ArmatureAction
+  delayAfterLookAway: 3
 --- !u!1 &1964672168
 GameObject:
   m_ObjectHideFlags: 0

@@ -9,6 +9,7 @@ TagManager:
   - Frame
   - wall_avoid
   - Menu
+  - glass
   layers:
   - Default
   - TransparentFX
