@@ -2,24 +2,47 @@ using UnityEngine;
 
 public class Radio : MonoBehaviour
 {
-    public AudioClip[] playlist; 
-    private AudioSource audioSource;
-    private int currentIndex = 0;
-
+    [Header("Radio")]
+    public AudioClip[] playlist;
     public bool playRandom = false;
+    public static bool ActiveRadio = true;
+
+    [Header("Ambiance café")]
+    public AudioClip ambianceCafeClip;
+    public static bool ambianceCafe = true;
+
+    private AudioSource radioSource;
+    private AudioSource ambianceSource;
+    private int currentIndex = 0;
 
     void Start()
     {
-        audioSource = gameObject.AddComponent<AudioSource>();
-        audioSource.loop = false; // On gère la boucle nous-mêmes
-        audioSource.playOnAwake = false;
-        audioSource.spatialBlend = 0f; // Son global, pas spatial
-        PlayNext();
+        // Gestion de la radio
+        if (ActiveRadio)
+        {
+            radioSource = gameObject.AddComponent<AudioSource>();
+            radioSource.loop = false;
+            radioSource.playOnAwake = false;
+            radioSource.spatialBlend = 0f;
+            PlayNext();
+        }
+
+        // Gestion de l'ambiance café
+        if (ambianceCafe && ambianceCafeClip != null)
+        {
+            ambianceSource = gameObject.AddComponent<AudioSource>();
+            ambianceSource.clip = ambianceCafeClip;
+            ambianceSource.loop = true;
+            ambianceSource.playOnAwake = false;
+            ambianceSource.volume = 0.2f;
+            ambianceSource.spatialBlend = 0f;
+            ambianceSource.Play();
+        }
     }
 
     void Update()
     {
-        if (!audioSource.isPlaying)
+        if (ActiveRadio && radioSource != null && !radioSource.isPlaying)
         {
             PlayNext();
         }
@@ -32,11 +55,10 @@ public class Radio : MonoBehaviour
         if (playRandom)
             currentIndex = Random.Range(0, playlist.Length);
         else
-        {
             currentIndex = (currentIndex + 1) % playlist.Length;
-        }
-        audioSource.volume = 0.1f; // Volume réduit pour un fond sonore
-        audioSource.clip = playlist[currentIndex];
-        audioSource.Play();
+
+        radioSource.volume = 0.1f;
+        radioSource.clip = playlist[currentIndex];
+        radioSource.Play();
     }
 }

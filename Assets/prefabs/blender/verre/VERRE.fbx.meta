@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: d245cffe6b30cbc4db728b12dfe63123
+guid: 50976aa753ecc3f468833e02834dfc91
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
@@ -7,58 +7,8 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Material
-    second: {fileID: 2100000, guid: f5b838fd4fc39ad40bf9bd15cc6c331d, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Material.003
-    second: {fileID: 2100000, guid: bcfdb1ad28cbd5245ba029c88e4c0206, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Material.005
-    second: {fileID: 2100000, guid: b2048f151ae9bf349a8596daaa9db243, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: beige
-    second: {fileID: 2100000, guid: 37f7a2b7caed74a4ca84be00532ba639, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: blanc
-    second: {fileID: 2100000, guid: 91baae358c6230244ab4ff15888a7b1a, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: grass
-    second: {fileID: 2100000, guid: aa5c3a326a6a11f41a7c2b0e3c106f3c, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: ligne
-    second: {fileID: 2100000, guid: 98885c437056c0e429270878a4d1e865, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: manche
-    second: {fileID: 2100000, guid: bcfdb1ad28cbd5245ba029c88e4c0206, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: metal
-    second: {fileID: 2100000, guid: 6f0b59d96ad2ad34584fe71878329f92, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: pied
-    second: {fileID: 2100000, guid: 05bc956cb6e6d204e9ea72425b0057a6, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: vrai bois maison.003
-    second: {fileID: 2100000, guid: e68e0a98140af4e45951102e07f200d1, type: 2}
+      name: glass sasn node.001
+    second: {fileID: 2100000, guid: fe6cd095d74376f4e8b3882c316f990a, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -88,7 +38,7 @@ ModelImporter:
     isReadable: 0
   meshes:
     lODScreenPercentages: []
-    globalScale: 0.3
+    globalScale: 1
     meshCompression: 0
     addColliders: 0
     useSRGBMaterialColor: 1
@@ -143,7 +93,7 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
-    globalScale: 0.003
+    globalScale: 1
     rootMotionBoneName: 
     hasTranslationDoF: 0
     hasExtraRoot: 0

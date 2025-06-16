@@ -60,4 +60,17 @@ public class MenuController : MonoBehaviour
     {
         SpawnThings.spawnDoorNoises = value;
     }
+
+    public void ToggleMenuSpawn(bool value)
+    {
+        SpawnMenu.menu = value;
+    }
+    public void ToggleRadioMusic(bool value)
+    {
+        Radio.ActiveRadio = value;
+    }
+    public void ToggleCafeAmbient(bool value)
+    {
+        Radio.ambianceCafe = value;
+    }
 }

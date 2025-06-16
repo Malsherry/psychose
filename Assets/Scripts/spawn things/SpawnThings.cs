@@ -6,68 +6,70 @@ using Oculus.Interaction.DebugTree;
 using UnityEngine.Audio;
 using System.Collections.Generic;
 using UnityEditor;
-
+//////////////////////////////////////////////
+///A FAIRE
+///modifier le fichier pour séparer toutes ces merdes (vf dernière conv avec chatgpt
+///refaire les variables du menu et les associer comme il faut dans ce dernier
+///garder ce script la en tant que wall spawner ou quelque chose du style
 public class SpawnThings : MonoBehaviour
 {
-    private List<Collider> alreadySpawnedColliders = new List<Collider>();
-
-    public static bool spawnCamera = true; // pour faire spawn la caméra
+    // --- État du spawn ---
+    public static bool spawnCamera = true;
     public static bool spawnPorteIFMS = true;
     public static bool spawnWallDecoration = true;
     public static bool spawnFootball = true;
     public static bool spawnBoardGames = true;
     public static bool spawnWindowNoise = true;
     public static bool spawnDoorNoises = true;
-    public static bool spawnCubes = true; // pour faire spawn des cubes aléatoirement dans la pièce 
+    public static bool spawnCubes = true;
 
-    [Header("Claquement de porte")]
-    public AudioClip randomNoiseClip; // Clip sélectionné dans l'inspecteur
-    public float noiseMinInterval = 30f;
-    public float noiseMaxInterval = 90f;
-
-    private AudioSource randomNoiseSource;
-    [Header("Prefabs des différents élements")]
-
-    public GameObject cameraPrefab; // caméra à faire spawn
-    public GameObject cubePrefab; //cube qu'on fait spawn
-    public GameObject wallPrefab; // truc qu'on fait spawn aux murs
-    public GameObject footballPrefab; // babyfoot a faire spawn
-    public GameObject BoardGames; // jeux de société à faire spawn
-    public GameObject porteIFMS; //porte a faire spawn
-    [Header("Paramètres")]
-
-
-    public float spawnTimer = 0.5f;
+    // --- Variables internes ---
+    private List<Collider> alreadySpawnedColliders = new List<Collider>();
     private float timer;
-    public int nb_frames; // nombre de fois qu'on fait spawn de l'art mural
     private float off = 0f;
 
+    [Header("Paramètres")]
+    public float spawnTimer = 0.5f;
+    public int nb_frames;
 
+    // --- Prefabs ---
+    [Header("Prefabs des différents éléments")]
+    public GameObject cameraPrefab;
+    public GameObject cubePrefab;
+    public GameObject wallPrefab;
+   // public GameObject footballPrefab;
+   // public GameObject BoardGames;
+    public GameObject porteIFMS;
 
+    // --- Labels de scène ---
     [Header("Scene labels")]
-
-    // paramètres dont on a besoin pour spawn des mesh aléatoirement dans la pièce
     public float minEdgeDistance;
     public MRUKAnchor.SceneLabels spawnLabelsCamera;
     public MRUKAnchor.SceneLabels spawnLabels;
     public MRUKAnchor.SceneLabels spawnLabelsWall;
-    public MRUKAnchor.SceneLabels spawnLabelsFootball;
-    public MRUKAnchor.SceneLabels avoid; // labels à éviter pour le spawn du babyfoot
-    public MRUKAnchor.SceneLabels spawnLabelsBoardGames;
+    // public MRUKAnchor.SceneLabels spawnLabelsFootball;
+    public MRUKAnchor.SceneLabels avoid;
+   // public MRUKAnchor.SceneLabels spawnLabelsBoardGames;
     public MRUKAnchor.SceneLabels spawnLabelsPorteIFMS;
-    public MRUKAnchor.SceneLabels window;
-    public MRUKAnchor.SceneLabels door_frame; // label de la porte
+   // public MRUKAnchor.SceneLabels window;
+    //public MRUKAnchor.SceneLabels door_frame;
     public MRUKAnchor.SceneLabels spawnAvoidLabelsWall;
     public MRUKAnchor.SceneLabels windowFrameLabel;
 
-    [Header("Autres bruits")]
+    // --- Bruits de claquement de porte ---
+   /* [Header("Claquement de porte")]
+    public AudioClip randomNoiseClip;
+    public float noiseMinInterval = 30f;
+    public float noiseMaxInterval = 90f;
+    private AudioSource randomNoiseSource;
 
+    // --- Autres bruits ---
+    [Header("Autres bruits")]
     public AudioClip OutsideNoise;
     public AudioClip DoorKeyNoise;
     public AudioMixerGroup doorKeyMixerGroup;
-    public AudioMixer AudioMixer; //psychose Mixuer
-    public AudioMixerGroup OutsideMixerGroup; // Le group où le son passera
-
+    public AudioMixer AudioMixer;
+    public AudioMixerGroup OutsideMixerGroup;*/
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -75,10 +77,10 @@ public class SpawnThings : MonoBehaviour
         alreadySpawnedColliders.Clear(); // reset before new spawn session
         StartCoroutine(WaitForRoomInitialization());
         // Préparer la source audio pour le bruit aléatoire
-        randomNoiseSource = gameObject.AddComponent<AudioSource>();
+        /*randomNoiseSource = gameObject.AddComponent<AudioSource>();
         randomNoiseSource.clip = randomNoiseClip;
         randomNoiseSource.playOnAwake = false;
-        randomNoiseSource.spatialBlend = 0f;
+        randomNoiseSource.spatialBlend = 0f;*/
 
         // Lancer la coroutine
         //StartCoroutine(PlayRandomNoise());
@@ -177,20 +179,20 @@ public class SpawnThings : MonoBehaviour
         if (spawnPorteIFMS)
             SpawnDoor();
 
-        if (spawnFootball)
-                SpawnFootball();
+       // if (spawnFootball)
+         //       SpawnFootball();
 
-            if (spawnBoardGames)
-                SpawnBoardGames();
+            //if (spawnBoardGames)
+              //  SpawnBoardGames();
 
-            if (spawnWindowNoise)
-                SpawnOutsideNoiseOnWindow();
+            /*if (spawnWindowNoise)
+                SpawnOutsideNoiseOnWindow();*/
 
             if (spawnCamera)
                 SpawnCamera();
 
-            if (spawnDoorNoises)
-                SpawnDoorKeyNoiseOnDoor();
+          /*  if (spawnDoorNoises)
+                SpawnDoorKeyNoiseOnDoor();*/
     }
 
 
@@ -206,7 +208,7 @@ public class SpawnThings : MonoBehaviour
             timer -= spawnTimer;
         }
     }
-    private IEnumerator PlayRandomNoise()
+   /* private IEnumerator PlayRandomNoise()
     {
         while (true)
         {
@@ -218,7 +220,7 @@ public class SpawnThings : MonoBehaviour
                 randomNoiseSource.Play();
             }
         }
-    }
+    }*/
 
     public void SpawnCubes()
     {
@@ -646,7 +648,6 @@ public class SpawnThings : MonoBehaviour
 
 
 
-
     public void SpawnCamera()
     {
         Debug.Log("Spawn Camera");
@@ -680,7 +681,7 @@ public class SpawnThings : MonoBehaviour
     }
 
 
-    public void SpawnBoardGames()
+    /*public void SpawnBoardGames()
     {
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
 
@@ -730,7 +731,7 @@ public class SpawnThings : MonoBehaviour
         {
             Debug.LogWarning("Aucune table détectée pour placer les jeux de société.");
         }
-    }
+    }*/
 
     public int maxAttempts = 20;
     public bool drawGizmos = true;
@@ -740,7 +741,7 @@ public class SpawnThings : MonoBehaviour
     private Quaternion lastGizmoRotation = Quaternion.identity;
     private bool lastGizmoOverlap;
 
-    public void SpawnFootball()
+    /*public void SpawnFootball()
     {
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
         if (room == null)
@@ -816,6 +817,7 @@ public class SpawnThings : MonoBehaviour
 
         Debug.LogWarning("Impossible de trouver une position valide pour le babyfoot après plusieurs tentatives.");
     }
+    */
 
     // Gizmos visibles dans la scène
     private void OnDrawGizmos()
@@ -845,6 +847,8 @@ public class SpawnThings : MonoBehaviour
 
     // <summary>
     /// Partie pour gérer différents bruits dans la scène
+    /// 
+    /*
     public void SpawnOutsideNoiseOnWindow()
     {
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
@@ -1009,7 +1013,7 @@ public class SpawnThings : MonoBehaviour
             yield return new WaitForSeconds(55f);
         }
     }
-
+    */
 }
 
 

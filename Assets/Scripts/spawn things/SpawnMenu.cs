@@ -4,21 +4,27 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+
 public class SpawnMenu : MonoBehaviour
 {
+    public static bool menu = true;
     public SpawnThings spawnThings; // à assigner dans l’inspecteur ou dynamiquement
     public GameObject wallPrefab; // Le prefab à instancier
-                                  // Start is called once before the first execution of Update after the MonoBehaviour is created
+
     private IEnumerator Start()
     {
-        Debug.Log("SpawnMenu: Waiting for MRUK.Instance...");
-        yield return new WaitUntil(() => MRUK.Instance != null && MRUK.Instance.IsInitialized);
 
-        Debug.Log("SpawnMenu: Waiting for GetCurrentRoom() to return a valid room...");
-        yield return new WaitUntil(() => MRUK.Instance.GetCurrentRoom() != null);
+        if (menu) { 
+            Debug.Log("SpawnMenu: Waiting for MRUK.Instance...");
+            yield return new WaitUntil(() => MRUK.Instance != null && MRUK.Instance.IsInitialized);
 
-        Debug.Log("SpawnMenu: Room is ready, calling SpawnWallDecoration...");
-        SpawnWallDecoration();
+            Debug.Log("SpawnMenu: Waiting for GetCurrentRoom() to return a valid room...");
+            yield return new WaitUntil(() => MRUK.Instance.GetCurrentRoom() != null);
+
+            Debug.Log("SpawnMenu: Room is ready, calling SpawnWallDecoration...");
+            SpawnWallDecoration();
+        }
     }
 
 

@@ -3,7 +3,62 @@ guid: d0f3fca1348b30c48aedef8458c3336c
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material
+    second: {fileID: 2100000, guid: cdb3055aff9e5e94b926e718b5a57d53, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.003
+    second: {fileID: 2100000, guid: 41aea6ad12b4fd44fad2d780cce48eb3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.005
+    second: {fileID: 2100000, guid: a03d1e3c7020abc4ba7050c3e5e82a48, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: beige
+    second: {fileID: 2100000, guid: 9c3d52b2d37700947b5d3da4231a5fe8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: blanc
+    second: {fileID: 2100000, guid: a8d77079237bd3f42b4b184e9120cd2c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: grass
+    second: {fileID: 2100000, guid: aa5c3a326a6a11f41a7c2b0e3c106f3c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ligne
+    second: {fileID: 2100000, guid: 98885c437056c0e429270878a4d1e865, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: manche
+    second: {fileID: 2100000, guid: 8422b47c7a44dcc47805772e0c3d577f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: metal
+    second: {fileID: 2100000, guid: 6f0b59d96ad2ad34584fe71878329f92, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: pied
+    second: {fileID: 2100000, guid: c9d347f0f59bfd94fb710f212b3ce4c4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: vrai bois maison.003
+    second: {fileID: 2100000, guid: e68e0a98140af4e45951102e07f200d1, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

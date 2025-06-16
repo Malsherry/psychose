@@ -15,6 +15,8 @@ public class GazeTriggeredSounds : MonoBehaviour
     private float nextAllowedTime = 0f;
     private Camera mainCamera;
 
+    public static bool ActiveGazeSounds = true; // Static variable to control activation
+
     private void Start()
     {
         mainCamera = Camera.main;
@@ -30,47 +32,52 @@ public class GazeTriggeredSounds : MonoBehaviour
 
     private void Update()
     {
-        if (mainCamera == null) return;
-
-        Ray ray = new Ray(mainCamera.transform.position, mainCamera.transform.forward);
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit, 10f, layerMask))
-        {
-            if (hit.transform.CompareTag(targetTag))
+        if(ActiveGazeSounds)
             {
-                if (hit.transform == lastHitTransform)
+            
+        
+            if (mainCamera == null) return;
+
+            Ray ray = new Ray(mainCamera.transform.position, mainCamera.transform.forward);
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit, 10f, layerMask))
+            {
+                if (hit.transform.CompareTag(targetTag))
                 {
-                    gazeTimer += Time.deltaTime;
-
-                    if (gazeTimer >= gazeTimeRequired && Time.time >= nextAllowedTime)
+                    if (hit.transform == lastHitTransform)
                     {
-                        PlayPrimarySound(hit.transform);
+                        gazeTimer += Time.deltaTime;
 
-                        // 50% chance to play secondary sound
-                        if (Random.value < 0.5f)
+                        if (gazeTimer >= gazeTimeRequired && Time.time >= nextAllowedTime)
                         {
-                            PlaySecondarySound(hit.transform);
-                        }
+                            PlayPrimarySound(hit.transform);
 
-                        nextAllowedTime = Time.time + cooldownTime;
-                        gazeTimer = -Mathf.Infinity;
+                            // 50% chance to play secondary sound
+                            if (Random.value < 0.5f)
+                            {
+                                PlaySecondarySound(hit.transform);
+                            }
+
+                            nextAllowedTime = Time.time + cooldownTime;
+                            gazeTimer = -Mathf.Infinity;
+                        }
+                    }
+                    else
+                    {
+                        lastHitTransform = hit.transform;
+                        gazeTimer = 0f;
                     }
                 }
                 else
                 {
-                    lastHitTransform = hit.transform;
-                    gazeTimer = 0f;
+                    ResetGaze();
                 }
             }
             else
             {
                 ResetGaze();
             }
-        }
-        else
-        {
-            ResetGaze();
         }
     }
 
@@ -99,6 +106,7 @@ public class GazeTriggeredSounds : MonoBehaviour
     private void PlaySpatialClipAtTransform(AudioClip clip, Transform target)
     {
         AudioSource tempSource = target.gameObject.AddComponent<AudioSource>();
+        tempSource.volume = 1f; // Adjust volume as needed
         tempSource.clip = clip;
         tempSource.spatialBlend = 1.0f; // 3D spatial audio
         tempSource.minDistance = 1f;
