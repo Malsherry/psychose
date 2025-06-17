@@ -60,28 +60,14 @@ public class SpawnRoomNoises : MonoBehaviour
 
         if (spawnWindowNoise)
         {
+            Debug.Log("SpawnRoomNoises: Initialisation de SpawnOutsideNoiseOnWindow");
             SpawnOutsideNoiseOnWindow();
         }
     }
 
-    private IEnumerator WaitForRoomInitialization()
-    {
-        // Attendre que MRUK soit initialisé
-        while (!MRUK.Instance || !MRUK.Instance.IsInitialized)
-            yield return null;
-
-        // Attendre que la room soit créée et qu'il y ait au moins une ancre détectée
-        MRUKRoom room = null;
-        while (room == null || room.Anchors == null || room.Anchors.Count == 0)
-        {
-            room = MRUK.Instance.GetCurrentRoom();
-            yield return null;
-        }
-    }
 
     public void SpawnOutsideNoiseOnWindow()
     {
-        Debug.Log(WaitForRoomInitialization().ToString());
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
         foreach (var anchor in room.Anchors)
         {

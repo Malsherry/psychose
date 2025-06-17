@@ -3356,10 +3356,10 @@ MonoBehaviour:
   spawnTimer: 20
   nb_frames: 2
   cameraPrefab: {fileID: 919132149155446097, guid: 92947f46ceea8c246aa5c8f2f170de3f, type: 3}
-  cubePrefab: {fileID: 4604106323707863612, guid: cad95a4dc04c7f6468455c15f99d1cf9, type: 3}
+  cubePrefab: {fileID: 4458301911101641532, guid: d929abd0be96dec40b313c945e3ed2e8, type: 3}
   wallPrefab: {fileID: 6859485909347316049, guid: 6dd656e83751f2e4ea3b141ca33e61be, type: 3}
   porteIFMS: {fileID: 6286098589619147119, guid: 1377f72789ef116499288a656750904d, type: 3}
-  windowSpotsPrefab: {fileID: 4604106323707863612, guid: cad95a4dc04c7f6468455c15f99d1cf9, type: 3}
+  windowSpotsPrefab: {fileID: 4458301911101641532, guid: 18496d3bf09cb5e4d992c4ab97617b09, type: 3}
   minEdgeDistance: 1
   spawnLabelsCamera: 2
   spawnLabels: 1
@@ -3372,7 +3372,7 @@ MonoBehaviour:
   animationSpeed: 0.3
   drawWallGizmo: 1
   maxWallAttempts: 15
-  wallOffset: 0.05
+  wallOffset: 0.1
   maxAttempts: 20
   drawGizmos: 1
 --- !u!114 &512977178
@@ -7780,7 +7780,7 @@ SkinnedMeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1343909089}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -9044,7 +9044,7 @@ Transform:
   m_GameObject: {fileID: 1565486747}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -11664,7 +11664,7 @@ SkinnedMeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2041302802}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1

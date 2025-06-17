@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 366927f4c20d24f498ce6c71cb5efc26, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.1
+      value: 0.55
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 366927f4c20d24f498ce6c71cb5efc26, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.1
+      value: 0.55
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 366927f4c20d24f498ce6c71cb5efc26, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.1
+      value: 0.55
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 366927f4c20d24f498ce6c71cb5efc26, type: 3}
       propertyPath: m_LocalPosition.x
@@ -66,7 +66,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 366927f4c20d24f498ce6c71cb5efc26, type: 3}
       propertyPath: m_Name
-      value: shadow 1
+      value: window_shadow
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 366927f4c20d24f498ce6c71cb5efc26, type: 3}
       propertyPath: m_TagString
@@ -79,12 +79,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 366927f4c20d24f498ce6c71cb5efc26, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1319098508123024757}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 366927f4c20d24f498ce6c71cb5efc26, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 9064919740243416926}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 366927f4c20d24f498ce6c71cb5efc26, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 7943160800679981164}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 366927f4c20d24f498ce6c71cb5efc26, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5376795016568019152}
@@ -115,43 +109,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &9064919740243416926
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4458301911101641532}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 113f7d551e0b1a84f933476aa47909af, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  agent: {fileID: 7943160800679981164}
-  speed: 0.5
-  wanderRadius: 5
---- !u!195 &7943160800679981164
-NavMeshAgent:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4458301911101641532}
-  m_Enabled: 1
-  m_AgentTypeID: 0
-  m_Radius: 0.5
-  m_Speed: 3.5
-  m_Acceleration: 8
-  avoidancePriority: 50
-  m_AngularSpeed: 120
-  m_StoppingDistance: 0
-  m_AutoTraverseOffMeshLink: 1
-  m_AutoBraking: 1
-  m_AutoRepath: 1
-  m_Height: 2
-  m_BaseOffset: 0
-  m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 4
 --- !u!95 &5376795016568019152
 Animator:
   serializedVersion: 7
@@ -162,7 +119,7 @@ Animator:
   m_GameObject: {fileID: 4458301911101641532}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 138b0132c65d88245a30b3a43c4a7531, type: 2}
+  m_Controller: {fileID: 9100000, guid: 07373b9c3b75db74bbde672fdda7ab89, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0

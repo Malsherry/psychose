@@ -167,7 +167,7 @@ public class SpawnThings : MonoBehaviour
             timer -= spawnTimer;
         }
     }
-    public float animationSpeed = 0.3f; // 1.0 = normal, < 1 = ralenti, > 1 = accéléré
+    public float animationSpeed = 1f; // 1.0 = normal, < 1 = ralenti, > 1 = accéléré
 
     public void SpawnWindowSpots()
     {
@@ -183,10 +183,16 @@ public class SpawnThings : MonoBehaviour
             if (anchor.HasAnyLabel(spawnLabelWindowSpots))
             {
                 Vector3 spawnPos = anchor.transform.position + anchor.transform.forward * 0.05f;
-                Quaternion rotation = Quaternion.LookRotation(Vector3.forward, anchor.transform.forward);
+                Quaternion rotation = anchor.transform.rotation;
 
                 GameObject spot = Instantiate(windowSpotsPrefab, spawnPos, rotation);
                 spot.SetActive(true);
+
+                // Réaligner tous les enfants
+                foreach (Transform child in spot.GetComponentsInChildren<Transform>())
+                {
+                    child.rotation = rotation;
+                }
 
                 Animator animator = spot.GetComponent<Animator>();
                 if (animator != null)
@@ -194,13 +200,14 @@ public class SpawnThings : MonoBehaviour
                     animator.speed = animationSpeed;
                 }
 
-                Debug.Log($"SpawnWindowSpots: Spot instancié avec bonne orientation et animation ralentie sur {anchor.name}");
+                Debug.Log($"SpawnWindowSpots: Spot instancié avec bonne orientation sur {anchor.name}");
                 return;
             }
         }
 
         Debug.LogWarning("SpawnWindowSpots: Aucun anchor avec le label spécifié trouvé.");
     }
+
 
 
     public void SpawnCubes()
@@ -217,7 +224,6 @@ public class SpawnThings : MonoBehaviour
     public bool drawWallGizmo = true;
     public static bool avoidSpawnWallDecoration = true;
     public int maxWallAttempts = 15;
-    public float wallOffset = 0.05f; // `off` dans ton code
 
 
     public bool TrySpawnVerticalPrefab(
@@ -262,10 +268,11 @@ public class SpawnThings : MonoBehaviour
                 return false;
             }
 
-            Vector3 spawnPos = pos + norm * depthOffset;
+            Quaternion rotation = Quaternion.LookRotation(norm) * Quaternion.Euler(0, 90, 0);
+            Vector3 localDepthDir = rotation * Vector3.left; // -X local du prefab
+            Vector3 spawnPos = pos + localDepthDir * depthOffset;
             spawnPos.y = verticalOffset;
 
-            Quaternion rotation = Quaternion.LookRotation(norm) * Quaternion.Euler(0, 90, 0);
             Vector3 worldCenter = spawnPos + rotation * localCenter;
             Vector3 worldHalfExtents = Vector3.Scale(localHalfExtents, prefab.transform.lossyScale);
 
@@ -342,6 +349,9 @@ public class SpawnThings : MonoBehaviour
         return false;
     }
 
+
+
+    public float wallOffset =1f; // `off` dans ton code
 
     public void SpawnDoor()
     {
