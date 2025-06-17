@@ -59,9 +59,8 @@ public class GlassSpawner : MonoBehaviour
         if (chosenTable != null)
         {
             Vector3 pos = chosenTable.transform.position + Vector3.up * 0.1f;
-            Quaternion rot = Quaternion.LookRotation(chosenTable.transform.forward, Vector3.up);
+            Quaternion rot = chosenTable.transform.rotation * Quaternion.Euler(90f, 0f, 0f);
             GameObject glass = Instantiate(glassPrefab, pos, rot);
-
             Animator animator = glass.GetComponent<Animator>();
             if (animator != null)
             {

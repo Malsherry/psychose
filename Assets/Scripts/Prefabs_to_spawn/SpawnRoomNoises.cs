@@ -1,6 +1,5 @@
 using Meta.XR.MRUtilityKit;
 using System.Collections;
-using UnityEditor.PackageManager.UI;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -31,21 +30,40 @@ public class SpawnRoomNoises : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        // Préparer la source audio pour le bruit aléatoire
-        StartCoroutine(WaitForRoomInitialization());
+        StartCoroutine(InitializeAfterRoomReady());
+    }
 
+    private IEnumerator InitializeAfterRoomReady()
+    {
+        // Attendre que MRUK soit initialisé
+        while (!MRUK.Instance || !MRUK.Instance.IsInitialized)
+            yield return null;
+
+        // Attendre que la room soit créée et qu'il y ait au moins une ancre détectée
+        MRUKRoom room = null;
+        while (room == null || room.Anchors == null || room.Anchors.Count == 0)
+        {
+            room = MRUK.Instance.GetCurrentRoom();
+            yield return null;
+        }
+        // Initialiser la source de bruit aléatoire
         randomNoiseSource = gameObject.AddComponent<AudioSource>();
         randomNoiseSource.clip = randomNoiseClip;
         randomNoiseSource.playOnAwake = false;
         randomNoiseSource.spatialBlend = 0f;
         StartCoroutine(PlayRandomNoise());
 
-        if (spawnWindowNoise)
-            SpawnOutsideNoiseOnWindow();
         if (spawnDoorNoises)
+        {
             SpawnDoorKeyNoiseOnDoor();
+        }
 
+        if (spawnWindowNoise)
+        {
+            SpawnOutsideNoiseOnWindow();
+        }
     }
+
     private IEnumerator WaitForRoomInitialization()
     {
         // Attendre que MRUK soit initialisé
@@ -59,14 +77,12 @@ public class SpawnRoomNoises : MonoBehaviour
             room = MRUK.Instance.GetCurrentRoom();
             yield return null;
         }
-
-        Debug.Log("[SpawnThings] Room et anchors initialisés, lancement des spawns.");
     }
 
     public void SpawnOutsideNoiseOnWindow()
     {
+        Debug.Log(WaitForRoomInitialization().ToString());
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
-        Debug.Log($"SpawnRoomNoises: AUDIO SpawnOutsideNoiseOnWindow - Room: {room.name}, Anchors: {room.Anchors.Count}");
         foreach (var anchor in room.Anchors)
         {
             if (anchor.HasAnyLabel(window))
@@ -174,7 +190,6 @@ public class SpawnRoomNoises : MonoBehaviour
     public void SpawnDoorKeyNoiseOnDoor()
     {
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
-        Debug.Log($"SpawnRoomNoises: AUDIO SpawnDoorKeyNoiseOnDoor - Room: {room.name}, Anchors: {room.Anchors.Count}");
         foreach (var anchor in room.Anchors)
         {
             if (anchor.HasAnyLabel(door_frame))
@@ -214,7 +229,6 @@ public class SpawnRoomNoises : MonoBehaviour
 
     private IEnumerator PlayDoorKeyNoisePeriodically(AudioSource audioSource)
     {
-        Debug.Log("SpawnRoomNoises: Démarrage de la coroutine pour jouer le bruit de clé toutes les 40 secondes.");
         while (true)
         {
             // Volume aléatoire entre 0.3 et 1.0

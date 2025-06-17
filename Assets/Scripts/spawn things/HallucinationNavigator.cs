@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-public class Cube_hallucination : MonoBehaviour
+public class HallucinationNaviguator : MonoBehaviour
 {
     public NavMeshAgent agent;
     public float speed;

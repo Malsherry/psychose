@@ -38,31 +38,50 @@ public class LookingAtSomething : MonoBehaviour
     {
         if (other.CompareTag(destroyableTags))
         {
-            Debug.Log("Hallucination détectée et détruite : " + other.name);
             // Lance le fondu avant destruction
             StartCoroutine(FadeAndDestroy(other.gameObject, 0.5f)); // 1 seconde de fondu
+            Debug.Log("Hallucination détectée et détruite : " + other.name);
+
         }
     }
 
     private IEnumerator FadeAndDestroy(GameObject target, float duration = 1.0f)
     {
         Renderer renderer = target.GetComponent<Renderer>();
+
         if (renderer == null)
         {
-            Destroy(target);
-            yield break;
+            // Cherche un Renderer dans les enfants
+            renderer = target.GetComponentInChildren<Renderer>();
+            if (renderer == null)
+            {
+                Debug.LogWarning("Aucun Renderer trouvé ni sur " + target.name + " ni dans ses enfants.");
+                Destroy(target);
+                yield break;
+            }
+            else
+            {
+                Debug.Log("Renderer trouvé sur un enfant de " + target.name + " : " + renderer.gameObject.name);
+            }
+        }
+        else
+        {
+            Debug.Log("Renderer trouvé sur " + target.name);
         }
 
-        // Utilise l'instance du matériau (pas le sharedMaterial)
-        Material mat = renderer.material;
+        // Force une instance indépendante du matériau
+        Material mat = new Material(renderer.material);
+        renderer.material = mat;
+
         Color startColor = mat.color;
         float startAlpha = startColor.a;
         float t = 0f;
+        Debug.Log($"Eyecorner: {mat.color.a}, Shader: {mat.shader.name}");
 
         // S'assure que le shader supporte la transparence
         if (mat.HasProperty("_Color"))
         {
-            // Pour URP/Lit ou Standard Shader, passe en mode transparent si besoin
+            Debug.Log("Shader a la propriété _Color");
             mat.SetFloat("_Surface", 1); // 1 = Transparent (URP)
             mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
             mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
@@ -81,8 +100,10 @@ public class LookingAtSomething : MonoBehaviour
             yield return null;
         }
 
+        Debug.Log("Fin du fondu, destruction de : " + target.name);
         Destroy(target);
     }
+
 
     Mesh CreateVisionFrustum()
     {
