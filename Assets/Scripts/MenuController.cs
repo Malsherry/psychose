@@ -63,7 +63,7 @@ public class MenuController : MonoBehaviour
 
     public void ToggleMenuSpawn(bool value)
     {
-        SpawnMenu.menu = value;
+        SpawnThings.spawnMenu = value;
     }
     public void ToggleRadioMusic(bool value)
     {

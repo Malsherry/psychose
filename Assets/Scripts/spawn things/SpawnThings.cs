@@ -19,6 +19,7 @@ public class SpawnThings : MonoBehaviour
     public static bool spawnWindowNoise = true;
     public static bool spawnDoorNoises = true;
     public static bool spawnCubes = true;
+    public static bool spawnMenu = true; // Pour le script SpiderSpawner
 
     // --- Variables internes ---
     private List<Collider> alreadySpawnedColliders = new List<Collider>();
@@ -38,6 +39,7 @@ public class SpawnThings : MonoBehaviour
     // public GameObject BoardGames;
     public GameObject porteIFMS;
     public GameObject windowSpotsPrefab;
+    public GameObject menuPrefab;
 
     // --- Labels de scène ---
     [Header("Scene labels")]
@@ -52,22 +54,25 @@ public class SpawnThings : MonoBehaviour
     public MRUKAnchor.SceneLabels spawnLabelWindowSpots;
 
 
+    [Header("Menu")]
+    public static bool menu = true;
 
     void Start()
     {
         alreadySpawnedColliders.Clear(); // reset before new spawn session
         StartCoroutine(WaitForRoomInitialization());
 
+
     }
 
 
     private IEnumerator WaitForRoomInitialization()
     {
-        // Attendre que MRUK soit initialisé
+        // Wait for MRUK init
         while (!MRUK.Instance || !MRUK.Instance.IsInitialized)
             yield return null;
 
-        // Attendre que la room soit créée et qu'il y ait au moins une ancre détectée
+        // Wait for room and anchors
         MRUKRoom room = null;
         while (room == null || room.Anchors == null || room.Anchors.Count == 0)
         {
@@ -75,10 +80,7 @@ public class SpawnThings : MonoBehaviour
             yield return null;
         }
 
-        Debug.Log("[SpawnThings] Room et anchors initialisés, lancement des spawns.");
-
-        // Une fois la salle initialisée, lancer les spawns conditionnels
-
+        Debug.Log("[SpawnThings] Room and anchors initialized, setting up obstacles.");
 
         if (room != null)
         {
@@ -87,11 +89,13 @@ public class SpawnThings : MonoBehaviour
                 if (!anchor.HasAnyLabel(windowFrameLabel)) continue;
 
                 GameObject window = anchor.gameObject;
+                if (window.name.Contains("DOOR_FRAME") || window.name.Contains("WINDOW_FRAME"))
+                {
+                    window.tag = "wall_avoid"; // or "wall_avoid" or "window_spots" depending on your avoid list
+                }
 
-                // Déterminer le nom de l'enfant mesh à chercher
                 string effectMeshName = window.name.Contains("DOOR_FRAME") ? "DOOR_FRAME_EffectMesh" : "WINDOW_FRAME_EffectMesh";
-
-                // Chercher ou créer l'enfant ObstacleBox
+                
                 Transform obstacleBox = window.transform.Find("ObstacleBox");
                 if (obstacleBox == null)
                 {
@@ -100,7 +104,6 @@ public class SpawnThings : MonoBehaviour
                     obstacleBox = obstacleBoxGO.transform;
                 }
 
-                // Trouver le MeshCollider de *_EffectMesh
                 Transform effectMesh = window.transform.Find(effectMeshName);
                 if (effectMesh == null)
                 {
@@ -115,68 +118,63 @@ public class SpawnThings : MonoBehaviour
                     continue;
                 }
 
-                // Chercher ou créer l'enfant Cube
                 Transform cubeChild = obstacleBox.Find("Cube");
-                GameObject cubeGO;
+                GameObject cubeGO = cubeChild == null
+                    ? GameObject.CreatePrimitive(PrimitiveType.Cube)
+                    : cubeChild.gameObject;
 
-                if (cubeChild == null)
-                {
-                    cubeGO = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    cubeGO.name = "Cube";
-                    cubeGO.transform.SetParent(obstacleBox, false);
-                }
-                else
-                {
-                    cubeGO = cubeChild.gameObject;
-                }
+                cubeGO.name = "Cube";
+                cubeGO.transform.SetParent(obstacleBox, false);
 
-                // Désactiver le MeshRenderer
                 var meshRenderer = cubeGO.GetComponent<MeshRenderer>();
                 if (meshRenderer != null)
                     meshRenderer.enabled = false;
 
-                // Ajouter ou configurer le BoxCollider
-                var boxCollider = cubeGO.GetComponent<BoxCollider>();
-                if (boxCollider == null)
-                    boxCollider = cubeGO.AddComponent<BoxCollider>();
+                var boxCollider = cubeGO.GetComponent<BoxCollider>() ?? cubeGO.AddComponent<BoxCollider>();
                 boxCollider.enabled = true;
 
-                // Copier la taille et la position locale du MeshCollider
-                // Copier la taille et la position locale du MeshCollider
                 Bounds meshBounds = meshCollider.sharedMesh.bounds;
                 cubeGO.transform.localPosition = effectMesh.localPosition + meshBounds.center;
                 cubeGO.transform.localRotation = Quaternion.identity;
 
-                // Multiplier uniquement l'épaisseur sur Z (profondeur locale)
                 Vector3 scale = meshBounds.size;
                 scale.z = 0.5f;
                 cubeGO.transform.localScale = scale;
 
-
-                // Ajouter un Rigidbody kinematic
-                Rigidbody rb = cubeGO.GetComponent<Rigidbody>();
-                if (rb == null)
+                if (!cubeGO.TryGetComponent(out Rigidbody rb))
                 {
                     rb = cubeGO.AddComponent<Rigidbody>();
                 }
                 rb.isKinematic = true;
                 rb.useGravity = false;
             }
-      
 
+            // Let Unity physics register new colliders
+            yield return null;
+            Debug.Log("[SpawnThings] windows anchors initialized, launching functions.");
+
+            // Safe to spawn now
+
+            SpawnWindowSpots();
+
+            if (spawnWallDecoration)
+                SpawnWallDecoration();
+
+            SpawnMenu();
+
+            if (spawnPorteIFMS)
+                SpawnDoor();
+
+            if (spawnCamera)
+                SpawnCamera();
+
+            Debug.Log("[SpawnThings] All objects spawned successfully.");
+            
+
+
+        }
     }
-    SpawnWindowSpots();
 
-        if (spawnWallDecoration)
-            SpawnWallDecoration();
-
-        if (spawnPorteIFMS)
-            SpawnDoor();
-
-        if (spawnCamera)
-            SpawnCamera();
-
-    }
 
     // Update is called once per frame
     void Update()
@@ -436,6 +434,60 @@ public class SpawnThings : MonoBehaviour
         }
     }
 
+
+    public void SpawnMenu()
+    {
+        MRUKRoom room = MRUK.Instance.GetCurrentRoom();
+        if (room == null)
+        {
+            Debug.LogError("SpawnMenu: MRUKRoom introuvable !");
+            return;
+        }
+
+        LabelFilter placementLabels = new LabelFilter(spawnLabelsWall);
+
+        List<string> avoidTags = new List<string>
+    {
+        "Frame",
+        "wall_avoid",
+        "window_spots",
+    };
+        BoxCollider prefabCollider =menuPrefab.GetComponent<BoxCollider>();
+        if (prefabCollider == null)
+        {
+            Debug.LogError("menuPrefab n’a pas de BoxCollider !");
+            return;
+        }
+
+        for (int i = 0; i < nb_frames; i++)
+        {
+
+            if (TrySpawnVerticalPrefab(
+                menuPrefab,
+                room,
+                placementLabels,
+                avoidTags,
+                minEdgeDistance,
+                wallOffset,
+                1.5f, // vertical offset for wall frame
+                maxWallAttempts,
+                out GameObject decoration))
+            {
+                Animator animator = decoration.GetComponentInChildren<Animator>(true);
+                if (animator != null)
+                {
+                    animator.enabled = true;
+                    animator.gameObject.SetActive(true);
+                }
+
+                Debug.Log($"SpawnMenu: Décoration {i + 1} instanciée.");
+            }
+            else
+            {
+                Debug.LogWarning($"SpawnMenu: Échec pour la décoration {i + 1}.");
+            }
+        }
+    }
 
 
     public void SpawnWallDecoration()

@@ -3405,7 +3405,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   footballPrefab: {fileID: 8638260277462896735, guid: a10a372febbb06d4e8f97a00fce737ac, type: 3}
   spawnLabelsFootball: 1
-  avoid: 8184
+  avoid: 8188
   minEdgeDistance: 0.5
   maxAttempts: 10
   lastGizmoCenter: {x: 0, y: 0, z: 0}
@@ -3579,6 +3579,7 @@ MonoBehaviour:
   wallPrefab: {fileID: 6859485909347316049, guid: 6dd656e83751f2e4ea3b141ca33e61be, type: 3}
   porteIFMS: {fileID: 6286098589619147119, guid: 1377f72789ef116499288a656750904d, type: 3}
   windowSpotsPrefab: {fileID: 4458301911101641532, guid: 18496d3bf09cb5e4d992c4ab97617b09, type: 3}
+  menuPrefab: {fileID: 4681801886569547346, guid: d95d1ca6fbf1dc749915e97daed11c9d, type: 3}
   minEdgeDistance: 0.5
   spawnLabelsCamera: 2
   spawnLabels: 1
