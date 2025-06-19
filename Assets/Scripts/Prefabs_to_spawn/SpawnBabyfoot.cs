@@ -73,7 +73,7 @@ public class BabySpawner : MonoBehaviour
                 MRUKAnchor anchor = col.GetComponentInParent<MRUKAnchor>();
                 if (anchor != null && anchor.HasAnyLabel(avoid))
                 {
-                    Debug.Log($"[baby Tentative {attempt + 1}] Collision avec '{anchor.name}'");
+                    //Debug.Log($"[baby Tentative {attempt + 1}] Collision avec '{anchor.name}'");
                     hasBadCollision = true;
                     break;
                 }
@@ -87,7 +87,7 @@ public class BabySpawner : MonoBehaviour
             if (!hasBadCollision)
             {
                 Instantiate(footballPrefab, spawnPos, finalRotation);
-                Debug.Log($"Babyfoot instancié à la tentative {attempt + 1}.");
+                //Debug.Log($"Babyfoot instancié à la tentative {attempt + 1}.");
                 return;
             }
         }

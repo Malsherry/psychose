@@ -46,7 +46,7 @@ public class GameSpawner : MonoBehaviour
 
         if (biggestTable != null)
         {
-            Vector3 pos = biggestTable.transform.position + Vector3.up * 0.1f;
+            Vector3 pos = biggestTable.transform.position + Vector3.up * 0.01f;
             Quaternion rot = Quaternion.LookRotation(biggestTable.transform.forward, Vector3.up);
             Instantiate(BoardGames, pos, rot);
             Debug.Log($"Jeu de société instancié sur : {biggestTable.name}, surface = {maxSurface}");

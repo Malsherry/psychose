@@ -11,19 +11,18 @@ public class SpawnMenu : MonoBehaviour
     public static bool menu = true;
     public SpawnThings spawnThings; // à assigner dans l’inspecteur ou dynamiquement
     public GameObject wallPrefab; // Le prefab à instancier
-
     private IEnumerator Start()
     {
 
         if (menu) { 
-            Debug.Log("SpawnMenu: Waiting for MRUK.Instance...");
+            //Debug.Log("SpawnMenu: Waiting for MRUK.Instance...");
             yield return new WaitUntil(() => MRUK.Instance != null && MRUK.Instance.IsInitialized);
 
-            Debug.Log("SpawnMenu: Waiting for GetCurrentRoom() to return a valid room...");
+            //Debug.Log("SpawnMenu: Waiting for GetCurrentRoom() to return a valid room...");
             yield return new WaitUntil(() => MRUK.Instance.GetCurrentRoom() != null);
 
-            Debug.Log("SpawnMenu: Room is ready, calling SpawnWallDecoration...");
-            SpawnWallDecoration();
+            //Debug.Log("SpawnMenu: Room is ready, calling SpawnWallDecoration...");
+            SpawningMenu();
         }
     }
 
@@ -33,7 +32,7 @@ public class SpawnMenu : MonoBehaviour
     {
         
     }
-    public void SpawnWallDecoration()
+    public void SpawningMenu()
     {
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
         if (room == null)
@@ -49,6 +48,9 @@ public class SpawnMenu : MonoBehaviour
         "Frame",
         "wall_avoid"
     };
+        BoxCollider prefabCollider = wallPrefab.GetComponent<BoxCollider>();
+        Vector3 localCenter = prefabCollider != null ? prefabCollider.center : Vector3.zero;
+        Vector3 localHalfExtents = prefabCollider != null ? prefabCollider.size * 0.5f : Vector3.one * 0.5f;
 
         for (int i = 0; i < 2; i++)
         {

@@ -9,6 +9,11 @@ public class GlassSpawner : MonoBehaviour
     [Header("Labels")]
     public MRUKAnchor.SceneLabels spawnLabelsTable;
 
+    [Header("Audio")]
+    public AudioClip glassSound;
+    [Range(0f, 1f)] public float soundVolume = 0.8f;
+
+
     public void SpawnGlass()
     {
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
@@ -21,7 +26,6 @@ public class GlassSpawner : MonoBehaviour
         MRUKAnchor biggestTable = null;
         float maxSurface = 0f;
 
-        // D'abord, identifier la plus grande table
         foreach (var anchor in room.Anchors)
         {
             if (anchor.HasAnyLabel(spawnLabelsTable))
@@ -45,7 +49,6 @@ public class GlassSpawner : MonoBehaviour
             }
         }
 
-        // Ensuite, trouver une autre table que la plus grande
         MRUKAnchor chosenTable = null;
         foreach (var anchor in room.Anchors)
         {
@@ -58,14 +61,28 @@ public class GlassSpawner : MonoBehaviour
 
         if (chosenTable != null)
         {
-            Vector3 pos = chosenTable.transform.position + Vector3.up * 0.1f;
+            Vector3 pos = chosenTable.transform.position + Vector3.up * 0.01f;
             Quaternion rot = chosenTable.transform.rotation * Quaternion.Euler(90f, 0f, 0f);
             GameObject glass = Instantiate(glassPrefab, pos, rot);
+
+            // Animation
             Animator animator = glass.GetComponent<Animator>();
             if (animator != null)
             {
                 animator.enabled = true;
                 animator.gameObject.SetActive(true);
+            }
+            // Ajouter et jouer le son une fois
+            if (glassSound != null)
+            {
+                AudioSource source = glass.AddComponent<AudioSource>();
+                source.clip = glassSound;
+                source.volume = soundVolume;
+                source.playOnAwake = false;
+                source.spatialBlend = 0.5f; // 0 = 2D, 1 = 3D
+                source.Play();
+                Debug.Log($"[GlassSpawner] Son joué : {glassSound.name}, volume : {soundVolume}");
+
             }
 
             Debug.Log($"Verre instancié sur : {chosenTable.name}");

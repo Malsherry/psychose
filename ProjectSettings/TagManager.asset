@@ -10,6 +10,7 @@ TagManager:
   - wall_avoid
   - Menu
   - glass
+  - window_spots
   layers:
   - Default
   - TransparentFX

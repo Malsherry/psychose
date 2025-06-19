@@ -89,24 +89,26 @@ public class GazeTriggeredSounds : MonoBehaviour
 
     private void PlayPrimarySound(Transform target)
     {
+        float volume = 1f; // Adjust volume as needed
         if (primarySounds.Length == 0) return;
 
         AudioClip clip = primarySounds[Random.Range(0, primarySounds.Length)];
-        PlaySpatialClipAtTransform(clip, target);
+        PlaySpatialClipAtTransform(clip, target, volume);
     }
 
     private void PlaySecondarySound(Transform target)
     {
+        float volume = 0.3f; // Adjust volume as needed
         if (secondarySounds.Length == 0) return;
 
         AudioClip clip = secondarySounds[Random.Range(0, secondarySounds.Length)];
-        PlaySpatialClipAtTransform(clip, target);
+        PlaySpatialClipAtTransform(clip, target, volume);
     }
 
-    private void PlaySpatialClipAtTransform(AudioClip clip, Transform target)
+    private void PlaySpatialClipAtTransform(AudioClip clip, Transform target, float volume)
     {
         AudioSource tempSource = target.gameObject.AddComponent<AudioSource>();
-        tempSource.volume = 1f; // Adjust volume as needed
+        tempSource.volume = volume; // Adjust volume as needed
         tempSource.clip = clip;
         tempSource.spatialBlend = 1.0f; // 3D spatial audio
         tempSource.minDistance = 1f;

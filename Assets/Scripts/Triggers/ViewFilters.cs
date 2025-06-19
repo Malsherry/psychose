@@ -123,7 +123,7 @@ public class ViewFilters : MonoBehaviour
             RaycastHit hit;
             if (!Physics.Raycast(ray, out hit, 10f, layerMask) || hit.transform != lastHitTransform)
             {
-                Debug.Log("Gaze lost, cancelling filter.");
+                //Debug.Log("Gaze lost, cancelling filter.");
                 break;
             }
 
@@ -182,12 +182,12 @@ public class ViewFilters : MonoBehaviour
         if (Physics.Raycast(ray, out hit, 10f, layerMask))
         {
             Debug.DrawRay(ray.origin, ray.direction * 10f, Color.red);
-            Debug.Log("Hit: " + hit.transform.name + " on layer " + hit.transform.gameObject.layer);
+           // Debug.Log("Hit: " + hit.transform.name + " on layer " + hit.transform.gameObject.layer);
 
 
             if (hit.transform.CompareTag(targetTag))
             {
-                Debug.Log("Filter hitting something interesting!");
+               // Debug.Log("Filter hitting something interesting!");
                 if (lastHitTransform == hit.transform)
                 {
                     gazeTimer += Time.deltaTime;

@@ -47,11 +47,11 @@ public class GazeTriggerGlass : MonoBehaviour
                     if (hit.transform == currentTarget)
                     {
                         gazeTimer += Time.deltaTime;
-                        Debug.Log("GazeTrigger: " + gazeTimer + " on: " + hit.transform.name);
+                        //Debug.Log("GazeTrigger: " + gazeTimer + " on: " + hit.transform.name);
 
                         if (gazeTimer >= gazeTimeRequired)
                         {
-                            Debug.Log("GazeTriggerGlass activated on: " + hit.transform.name);
+                            //Debug.Log("GazeTriggerGlass activated on: " + hit.transform.name);
                             StartCoroutine(HandleGlassAnimation(hit.transform));
                             isActivated = true;
                             animationPlayed = false;

@@ -6,6 +6,7 @@ using Oculus.Interaction.DebugTree;
 using UnityEngine.Audio;
 using System.Collections.Generic;
 using UnityEditor;
+using System.Runtime.CompilerServices;
 
 public class SpawnThings : MonoBehaviour
 {
@@ -58,11 +59,7 @@ public class SpawnThings : MonoBehaviour
         StartCoroutine(WaitForRoomInitialization());
 
     }
-    IEnumerator DelayedSpawnWallDecoration(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        SpawnWallDecoration();
-    }
+
 
     private IEnumerator WaitForRoomInitialization()
     {
@@ -82,73 +79,99 @@ public class SpawnThings : MonoBehaviour
 
         // Une fois la salle initialisée, lancer les spawns conditionnels
 
-        if (spawnWallDecoration)
+
+        if (room != null)
         {
-            if (room != null)
+            foreach (var anchor in room.GetComponentsInChildren<MRUKAnchor>(true))
             {
-                foreach (var anchor in room.GetComponentsInChildren<MRUKAnchor>(true))
+                if (!anchor.HasAnyLabel(windowFrameLabel)) continue;
+
+                GameObject window = anchor.gameObject;
+
+                // Déterminer le nom de l'enfant mesh à chercher
+                string effectMeshName = window.name.Contains("DOOR_FRAME") ? "DOOR_FRAME_EffectMesh" : "WINDOW_FRAME_EffectMesh";
+
+                // Chercher ou créer l'enfant ObstacleBox
+                Transform obstacleBox = window.transform.Find("ObstacleBox");
+                if (obstacleBox == null)
                 {
-                    if (!anchor.HasAnyLabel(windowFrameLabel)) continue;
-
-                    GameObject window = anchor.gameObject;
-
-                    // Chercher ou créer l'enfant ObstacleBox
-                    Transform obstacleBox = window.transform.Find("ObstacleBox");
-                    if (obstacleBox == null)
-                    {
-                        GameObject obstacleBoxGO = new GameObject("ObstacleBox");
-                        obstacleBoxGO.transform.SetParent(window.transform, false);
-                        obstacleBox = obstacleBoxGO.transform;
-                    }
-
-                    // Chercher ou créer l'enfant cube dans ObstacleBox
-                    Transform cubeChild = obstacleBox.Find("Cube");
-                    if (cubeChild == null)
-                    {
-                        GameObject cubeGO = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                        cubeGO.name = "Cube";
-                        cubeGO.transform.SetParent(obstacleBox, false);
-
-                        // Désactiver le MeshRenderer
-                        var meshRenderer = cubeGO.GetComponent<MeshRenderer>();
-                        if (meshRenderer != null)
-                            meshRenderer.enabled = false;
-
-                        // Activer le BoxCollider
-                        var boxCollider = cubeGO.GetComponent<BoxCollider>();
-                        if (boxCollider != null)
-                            boxCollider.enabled = true;
-                        Debug.Log($"BoxCollider activé ? {boxCollider.enabled}");
-
-                        Rigidbody rb = cubeGO.GetComponent<Rigidbody>();
-                        if (rb == null)
-                        {
-                            rb = cubeGO.AddComponent<Rigidbody>();
-                            rb.isKinematic = true; // Pour ne pas que la physique le déplace
-                            rb.useGravity = false;
-                        }
-
-                    }
-                    else
-                    {
-                        // Si l'enfant existe déjà, s'assurer que le MeshRenderer est désactivé et le BoxCollider activé
-                        var meshRenderer = cubeChild.GetComponent<MeshRenderer>();
-                        if (meshRenderer != null)
-                            meshRenderer.enabled = false;
-
-                        var boxCollider = cubeChild.GetComponent<BoxCollider>();
-                        if (boxCollider != null)
-                            boxCollider.enabled = true;
-                    }
+                    GameObject obstacleBoxGO = new GameObject("ObstacleBox");
+                    obstacleBoxGO.transform.SetParent(window.transform, false);
+                    obstacleBox = obstacleBoxGO.transform;
                 }
-            }
 
-            StartCoroutine(DelayedSpawnWallDecoration(1f));
-        }
+                // Trouver le MeshCollider de *_EffectMesh
+                Transform effectMesh = window.transform.Find(effectMeshName);
+                if (effectMesh == null)
+                {
+                    Debug.LogWarning($"{effectMeshName} non trouvé dans {window.name}");
+                    continue;
+                }
+
+                MeshCollider meshCollider = effectMesh.GetComponent<MeshCollider>();
+                if (meshCollider == null)
+                {
+                    Debug.LogWarning($"MeshCollider manquant sur {effectMesh.name}");
+                    continue;
+                }
+
+                // Chercher ou créer l'enfant Cube
+                Transform cubeChild = obstacleBox.Find("Cube");
+                GameObject cubeGO;
+
+                if (cubeChild == null)
+                {
+                    cubeGO = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    cubeGO.name = "Cube";
+                    cubeGO.transform.SetParent(obstacleBox, false);
+                }
+                else
+                {
+                    cubeGO = cubeChild.gameObject;
+                }
+
+                // Désactiver le MeshRenderer
+                var meshRenderer = cubeGO.GetComponent<MeshRenderer>();
+                if (meshRenderer != null)
+                    meshRenderer.enabled = false;
+
+                // Ajouter ou configurer le BoxCollider
+                var boxCollider = cubeGO.GetComponent<BoxCollider>();
+                if (boxCollider == null)
+                    boxCollider = cubeGO.AddComponent<BoxCollider>();
+                boxCollider.enabled = true;
+
+                // Copier la taille et la position locale du MeshCollider
+                // Copier la taille et la position locale du MeshCollider
+                Bounds meshBounds = meshCollider.sharedMesh.bounds;
+                cubeGO.transform.localPosition = effectMesh.localPosition + meshBounds.center;
+                cubeGO.transform.localRotation = Quaternion.identity;
+
+                // Multiplier uniquement l'épaisseur sur Z (profondeur locale)
+                Vector3 scale = meshBounds.size;
+                scale.z = 0.5f;
+                cubeGO.transform.localScale = scale;
+
+
+                // Ajouter un Rigidbody kinematic
+                Rigidbody rb = cubeGO.GetComponent<Rigidbody>();
+                if (rb == null)
+                {
+                    rb = cubeGO.AddComponent<Rigidbody>();
+                }
+                rb.isKinematic = true;
+                rb.useGravity = false;
+            }
+      
+
+    }
+    SpawnWindowSpots();
+
+        if (spawnWallDecoration)
+            SpawnWallDecoration();
+
         if (spawnPorteIFMS)
             SpawnDoor();
-
-        SpawnWindowSpots();
 
         if (spawnCamera)
             SpawnCamera();
@@ -178,6 +201,8 @@ public class SpawnThings : MonoBehaviour
             return;
         }
 
+        bool foundAny = false;
+
         foreach (var anchor in room.Anchors)
         {
             if (anchor.HasAnyLabel(spawnLabelWindowSpots))
@@ -201,13 +226,16 @@ public class SpawnThings : MonoBehaviour
                 }
 
                 Debug.Log($"SpawnWindowSpots: Spot instancié avec bonne orientation sur {anchor.name}");
-                return;
+                foundAny = true;
+                // PLUS DE return ici pour continuer la boucle
             }
         }
 
-        Debug.LogWarning("SpawnWindowSpots: Aucun anchor avec le label spécifié trouvé.");
+        if (!foundAny)
+        {
+            Debug.LogWarning("SpawnWindowSpots: Aucun anchor avec le label spécifié trouvé.");
+        }
     }
-
 
 
     public void SpawnCubes()
@@ -225,136 +253,150 @@ public class SpawnThings : MonoBehaviour
     public static bool avoidSpawnWallDecoration = true;
     public int maxWallAttempts = 15;
 
+    private class TemporaryColliderGO : System.IDisposable
+    {
+        public GameObject GO { get; private set; }
+        public BoxCollider Collider { get; private set; }
+
+        public TemporaryColliderGO(BoxCollider source, Vector3 pos, Quaternion rot, Vector3 scale)
+        {
+            GO = new GameObject("TempCollider");
+            GO.hideFlags = HideFlags.HideAndDontSave;
+            Collider = GO.AddComponent<BoxCollider>();
+            Collider.size = source.size;
+            Collider.center = source.center;
+            GO.transform.SetPositionAndRotation(pos, rot);
+            GO.transform.localScale = scale;
+        }
+
+        public void Dispose()
+        {
+            if (GO != null) GameObject.DestroyImmediate(GO);
+        }
+    }
 
     public bool TrySpawnVerticalPrefab(
-      GameObject prefab,
-      MRUKRoom room,
-      LabelFilter placementLabels,
-      List<string> avoidTags,
-      float minEdgeDist,
-      float depthOffset,
-      float verticalOffset,
-      int maxAttempts,
-      out GameObject spawned)
+        GameObject prefab,
+        MRUKRoom room,
+        LabelFilter placementLabels,
+        List<string> avoidTags,
+        float minEdgeDist,
+        float depthOffset,
+        float verticalOffset,
+        int maxAttempts,
+        out GameObject spawned)
     {
         spawned = null;
 
-        if (prefab == null || room == null)
+        // Validate prefab collider
+        if (!prefab.TryGetComponent(out BoxCollider prefabCollider))
         {
-            Debug.LogError("TrySpawnVerticalPrefab: prefab ou room est null.");
-            return false;
-        }
-
-        BoxCollider prefabCollider = prefab.GetComponentInChildren<BoxCollider>();
-        if (prefabCollider == null)
-        {
-            Debug.LogError("TrySpawnVerticalPrefab: Le prefab n'a pas de BoxCollider !");
+            Debug.LogError($"[Spawn] Prefab \"{prefab.name}\" missing BoxCollider!");
             return false;
         }
 
         Vector3 localCenter = prefabCollider.center;
         Vector3 localHalfExtents = prefabCollider.size * 0.5f;
+        Vector3 prefabScale = prefab.transform.lossyScale;
+        Vector3 worldHalfExtents = Vector3.Scale(localHalfExtents, prefabScale);
+
+        Quaternion baseRotation = Quaternion.Euler(0, 90, 0);
 
         for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
+            // Try to get a surface position
             if (!room.GenerateRandomPositionOnSurface(
-                MRUK.SurfaceType.VERTICAL,
-                minEdgeDist,
-                placementLabels,
-                out Vector3 pos,
-                out Vector3 norm))
+                MRUK.SurfaceType.VERTICAL, minEdgeDist, placementLabels, out Vector3 pos, out Vector3 norm))
             {
-                Debug.LogWarning("TrySpawnVerticalPrefab: Pas de position murale trouvée.");
+                Debug.LogWarning($"[Spawn] No valid wall position on attempt {attempt + 1}.");
                 return false;
             }
 
-            Quaternion rotation = Quaternion.LookRotation(norm) * Quaternion.Euler(0, 90, 0);
-            Vector3 localDepthDir = rotation * Vector3.left; // -X local du prefab
-            Vector3 spawnPos = pos + localDepthDir * depthOffset;
+            Quaternion rotation = Quaternion.LookRotation(norm) * baseRotation;
+            Vector3 depthDirection = -norm.normalized;
+
+            float depthFromWall = localHalfExtents.x * prefabScale.x;
+            Vector3 spawnPos = pos + depthDirection * (depthFromWall + depthOffset);
+
+            // Apply vertical offset
             spawnPos.y = verticalOffset;
 
-            Vector3 worldCenter = spawnPos + rotation * localCenter;
-            Vector3 worldHalfExtents = Vector3.Scale(localHalfExtents, prefab.transform.lossyScale);
+            // Adjust center
+            Vector3 rotatedCenter = rotation * localCenter;
+            Vector3 worldCenter = spawnPos + rotatedCenter;
 
-            Collider[] overlaps = Physics.OverlapBox(worldCenter, worldHalfExtents, rotation);
-            bool badCollision = false;
+#if UNITY_EDITOR
+            // Optional Gizmo Debug
+            var gizmoGO = new GameObject($"SpawnBoxGizmo_{attempt + 1}_{prefab.name}");
+            var gizmo = gizmoGO.AddComponent<GizmoDebugSpawnBox>();
+            gizmo.worldCenter = worldCenter;
+            gizmo.worldHalfExtents = worldHalfExtents == Vector3.zero ? Vector3.one * 0.1f : worldHalfExtents;
+            gizmo.rotation = rotation;
+#endif
 
-            foreach (var col in overlaps)
+            // Check for overlap with avoid-tag objects or disallowed anchor labels
+            bool hasBadCollision = false;
+            foreach (var col in Physics.OverlapBox(worldCenter, worldHalfExtents, rotation))
             {
                 if (col.transform.IsChildOf(prefab.transform)) continue;
 
-                foreach (string avoidTag in avoidTags)
+                if (avoidTags.Contains(col.tag))
                 {
-                    if (col.CompareTag(avoidTag))
-                    {
-                        badCollision = true;
-                        Debug.Log($"[Spawn] Collision avec tag bloquant: {col.name}");
-                        break;
-                    }
+                    Debug.Log($"[Spawn] Blocked by tag: {col.name} ({col.tag})");
+                    hasBadCollision = true;
+                    break;
                 }
 
-                if (badCollision) break;
-
-                MRUKAnchor anchor = col.GetComponentInParent<MRUKAnchor>();
-                if (anchor != null && anchor.HasAnyLabel(spawnAvoidLabelsWall))
+                if (col.GetComponentInParent<MRUKAnchor>() is MRUKAnchor anchor &&
+                    anchor.HasAnyLabel(spawnAvoidLabelsWall))
                 {
-                    badCollision = true;
-                    Debug.Log($"[Spawn] Collision avec anchor label interdit: {anchor.name}");
+                    Debug.Log($"[Spawn] Blocked by anchor: {anchor.name}");
+                    hasBadCollision = true;
                     break;
                 }
             }
 
-            //  Extra custom overlap check with previous spawns
-            if (!badCollision)
+            // Further validation using ComputePenetration
+            if (!hasBadCollision)
             {
-                // Create a temporary clone collider for penetration testing
-                GameObject temp = new GameObject("TempCheck");
-                temp.hideFlags = HideFlags.HideAndDontSave;
-                BoxCollider tempCol = temp.AddComponent<BoxCollider>();
-                tempCol.size = prefabCollider.size;
-                tempCol.center = prefabCollider.center;
-
-                temp.transform.position = worldCenter;
-                temp.transform.rotation = rotation;
-                temp.transform.localScale = prefab.transform.lossyScale;
-
-                foreach (Collider previousCol in alreadySpawnedColliders)
+                using (var tempGO = new TemporaryColliderGO(prefabCollider, worldCenter, rotation, prefabScale))
                 {
-                    if (Physics.ComputePenetration(
-                        tempCol, temp.transform.position, temp.transform.rotation,
-                        previousCol, previousCol.transform.position, previousCol.transform.rotation,
-                        out Vector3 dir, out float dist))
+                    foreach (var previousCol in alreadySpawnedColliders)
                     {
-                        Debug.Log($"[Spawn] ComputePenetration: Overlap detected with {previousCol.name} (dist: {dist})");
-                        badCollision = true;
-                        break;
+                        if (Physics.ComputePenetration(
+                            tempGO.Collider, worldCenter, rotation,
+                            previousCol, previousCol.transform.position, previousCol.transform.rotation,
+                            out _, out float dist))
+                        {
+                            Debug.Log($"[Spawn] Overlap with previous object: {previousCol.name} (dist: {dist})");
+                            hasBadCollision = true;
+                            break;
+                        }
                     }
                 }
-
-                GameObject.DestroyImmediate(temp); // Clean up test object
             }
 
-            if (!badCollision)
+            if (!hasBadCollision)
             {
                 spawned = GameObject.Instantiate(prefab, spawnPos, rotation);
                 spawned.SetActive(true);
-
                 alreadySpawnedColliders.AddRange(spawned.GetComponentsInChildren<Collider>());
-                Debug.Log($"[Spawn] Objet instancié avec succès à la tentative {attempt + 1}");
+                Debug.Log($"[Spawn] Successfully spawned \"{prefab.name}\" on attempt {attempt + 1}");
                 return true;
             }
         }
 
-        Debug.LogWarning("[Spawn] Aucune position valide trouvée après toutes les tentatives.");
+        Debug.LogWarning($"[Spawn] Failed to find a valid position for \"{prefab.name}\" after {maxAttempts} attempts.");
         return false;
     }
 
 
 
-    public float wallOffset =1f; // `off` dans ton code
+    public float wallOffset; // `off` dans ton code
 
     public void SpawnDoor()
     {
+        float doorOffset = -0.5f; 
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
         if (room == null)
         {
@@ -367,8 +409,13 @@ public class SpawnThings : MonoBehaviour
         List<string> avoidTags = new List<string>
     {
         "Frame",
-        "wall_avoid"
+        "wall_avoid",
+        "window_spots",
     };
+        BoxCollider prefabCollider = porteIFMS.GetComponent<BoxCollider>();
+        Vector3 localCenter = prefabCollider != null ? prefabCollider.center : Vector3.zero;
+        Vector3 localHalfExtents = prefabCollider != null ? prefabCollider.size * 0.5f : Vector3.one * 0.5f;
+
 
         if (TrySpawnVerticalPrefab(
             porteIFMS,
@@ -376,7 +423,7 @@ public class SpawnThings : MonoBehaviour
             placementLabels,
             avoidTags,
             minEdgeDistance,
-            wallOffset,
+            doorOffset,
             0.05f, // vertical offset for door
             maxWallAttempts,
             out GameObject spawnedDoor))
@@ -405,11 +452,19 @@ public class SpawnThings : MonoBehaviour
         List<string> avoidTags = new List<string>
     {
         "Frame",
-        "wall_avoid"
+        "wall_avoid",
+        "window_spots",
     };
+        BoxCollider prefabCollider = wallPrefab.GetComponent<BoxCollider>();
+        if (prefabCollider == null)
+        {
+            Debug.LogError("wallPrefab n’a pas de BoxCollider !");
+            return;
+        }
 
         for (int i = 0; i < nb_frames; i++)
         {
+
             if (TrySpawnVerticalPrefab(
                 wallPrefab,
                 room,
