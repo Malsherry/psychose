@@ -225,6 +225,7 @@ public class SpawnThings : MonoBehaviour
 
                 Debug.Log($"SpawnWindowSpots: Spot instancié avec bonne orientation sur {anchor.name}");
                 foundAny = true;
+                return; // On s'arrête après le premier anchor trouvé
                 // PLUS DE return ici pour continuer la boucle
             }
         }
@@ -577,30 +578,9 @@ public class SpawnThings : MonoBehaviour
     }
 
     public int maxAttempts = 20;
-    public bool drawGizmos = true;
-
-    private Vector3 lastGizmoCenter;
-    private Vector3 lastGizmoHalfExtents;
-    private Quaternion lastGizmoRotation = Quaternion.identity;
-    private bool lastGizmoOverlap;
-
 
     // Gizmos visibles dans la scène
-    private void OnDrawGizmos()
-    {
-        if (!drawGizmos) return;
-
-        // Vérifie que la rotation est valide avant de l'utiliser
-        if (lastGizmoRotation == Quaternion.identity || lastGizmoRotation.w == 0f)
-        {
-            return; // On évite de faire planter la scène Unity
-        }
-
-        Gizmos.color = lastGizmoOverlap ? Color.red : Color.green;
-        Matrix4x4 rotationMatrix = Matrix4x4.TRS(lastGizmoCenter, lastGizmoRotation, Vector3.one);
-        Gizmos.matrix = rotationMatrix;
-        Gizmos.DrawWireCube(Vector3.zero, lastGizmoHalfExtents * 2);
-    }
+   
 
 }
 

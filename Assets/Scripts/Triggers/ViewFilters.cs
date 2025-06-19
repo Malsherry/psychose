@@ -23,7 +23,11 @@ public class ViewFilters : MonoBehaviour
 
 
     public AudioClip filterSound; // Son à jouer pendant le filtre
+    public AudioClip secondarySound; // New sound to play after 1 second
+
     private AudioSource audioSource;
+    private AudioSource secondaryAudioSource;
+
 
     private GameObject filterPlane;     // Plane pour le filtre
     private Camera mainCamera;         // Référence à la caméra principale
@@ -77,6 +81,14 @@ public class ViewFilters : MonoBehaviour
         audioSource.spatialBlend = 0f; // Son 2D (non spatial)
         audioSource.volume = 0f; // Commence silencieux
         audioSource.Play();
+
+
+        secondaryAudioSource = filterPlane.AddComponent<AudioSource>();
+        secondaryAudioSource.clip = secondarySound;
+        secondaryAudioSource.loop = false;
+        secondaryAudioSource.playOnAwake = false;
+        secondaryAudioSource.spatialBlend = 0f;
+        secondaryAudioSource.volume = 1f;
 
         // Adapter la taille
         UpdateFilterSize();
@@ -151,16 +163,21 @@ public class ViewFilters : MonoBehaviour
         float startVolume = audioSource.volume;
         float time = 0f;
 
+        // Start coroutine to delay and play the second sound
+        if (targetAlpha > 0f && secondaryAudioSource != null && secondarySound != null)
+        {
+            StartCoroutine(PlaySecondarySoundWithDelay(1f));
+        }
+
         while (time < fadeDuration)
         {
             time += Time.deltaTime;
             float t = time / fadeDuration;
 
-            // Changer alpha
+            // Alpha and volume changes
             color.a = Mathf.Lerp(startAlpha, targetAlpha, t);
             runtimeMaterial.color = color;
 
-            // Changer volume (lié à alpha)
             audioSource.volume = Mathf.Lerp(startVolume, targetAlpha, t);
 
             yield return null;
@@ -169,6 +186,16 @@ public class ViewFilters : MonoBehaviour
         color.a = targetAlpha;
         runtimeMaterial.color = color;
         audioSource.volume = targetAlpha;
+    }
+    private IEnumerator PlaySecondarySoundWithDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (secondaryAudioSource != null && secondarySound != null)
+        {
+            Debug.Log("Playing secondary sound after delay.");
+            secondaryAudioSource.Play();
+        }
     }
 
     private void Update()

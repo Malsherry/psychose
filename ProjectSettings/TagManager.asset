@@ -11,6 +11,8 @@ TagManager:
   - Menu
   - glass
   - window_spots
+  - Games
+  - camera
   layers:
   - Default
   - TransparentFX

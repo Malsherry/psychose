@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class GazeTriggerAnimation : MonoBehaviour
+public class GazeTriggerFrameAnimation : MonoBehaviour
 {
     private int layerMask;
     public string targetTag = "Frame";
@@ -9,12 +9,14 @@ public class GazeTriggerAnimation : MonoBehaviour
     public string animationName = "root|rootAction";
 
     public AudioClip paperNoise;
+    public AudioClip delayedSound; // <--- Second sound played after 2 seconds of gaze
 
     private float gazeTimer = 0f;
     private Transform lastHitTransform = null;
     private float nextAllowedTime = 0f;
 
     private Camera mainCamera;
+    private bool hasTriggeredDelayedSound = false;
 
     private void Start()
     {
@@ -46,53 +48,68 @@ public class GazeTriggerAnimation : MonoBehaviour
                 {
                     gazeTimer += Time.deltaTime;
 
+                    if (!hasTriggeredDelayedSound && gazeTimer >= gazeTimeRequired)
+                    {
+                        if (delayedSound != null)
+                        {
+                            PlaySound(hit.transform, delayedSound);
+                        }
+                        hasTriggeredDelayedSound = true;
+                    }
+
                     if (gazeTimer >= gazeTimeRequired && Time.time >= nextAllowedTime)
                     {
                         Animator anim = hit.transform.GetComponent<Animator>();
                         if (anim != null)
                         {
-
                             anim.Play(animationName, 0, 0f);
                         }
 
                         if (paperNoise != null)
                         {
-                            PlaySpatialSoundAtTransform(hit.transform);
+                            PlaySound(hit.transform, paperNoise);
                         }
 
                         nextAllowedTime = Time.time + cooldownTime;
                         gazeTimer = -Mathf.Infinity;
+                        hasTriggeredDelayedSound = false;
                     }
                 }
                 else
                 {
                     lastHitTransform = hit.transform;
                     gazeTimer = 0f;
+                    hasTriggeredDelayedSound = false;
                 }
             }
             else
             {
-                gazeTimer = 0f;
-                lastHitTransform = null;
+                ResetGaze();
             }
         }
         else
         {
-            gazeTimer = 0f;
-            lastHitTransform = null;
+            ResetGaze();
         }
     }
 
-    private void PlaySpatialSoundAtTransform(Transform target)
+    private void ResetGaze()
+    {
+        gazeTimer = 0f;
+        lastHitTransform = null;
+        hasTriggeredDelayedSound = false;
+    }
+
+    private void PlaySound(Transform target, AudioClip clip)
     {
         AudioSource tempSource = target.gameObject.AddComponent<AudioSource>();
-        tempSource.clip = paperNoise;
+        tempSource.clip = clip;
         tempSource.spatialBlend = 1.0f; // 3D sound
         tempSource.minDistance = 1f;
         tempSource.maxDistance = 15f;
         tempSource.rolloffMode = AudioRolloffMode.Linear;
 
         tempSource.Play();
-        Destroy(tempSource, paperNoise.length + 0.1f); // Nettoyage après lecture
+        Destroy(tempSource, clip.length + 0.1f); // Clean up
     }
 }

@@ -19,6 +19,7 @@ public class SpawnRoomNoises : MonoBehaviour
     public float noiseMaxInterval = 90f;
     private AudioSource randomNoiseSource;
 
+
     // --- Autres bruits ---
     [Header("Autres bruits")]
     public AudioClip OutsideNoise;
