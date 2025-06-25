@@ -2327,8 +2327,8 @@ MonoBehaviour:
   secondaryWhisperClips:
   - {fileID: 8300000, guid: b32a925f1d436c14daeca077b88a35fd, type: 3}
   - {fileID: 8300000, guid: d4cb5515fb2516b47bbbd21dab1f3724, type: 3}
-  baseVolume: 0.258
-  secondaryVolume: 0.714
+  baseVolume: 0.133
+  secondaryVolume: 0.527
   volumeVariationRange: 0.3
   volumeChangeSpeed: 0.2
   basePan: 0
@@ -3375,7 +3375,7 @@ Transform:
   m_GameObject: {fileID: 508054980}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.3075185, y: -6.444223, z: 8.448663}
+  m_LocalPosition: {x: -1.187, y: -0.67, z: -0.954}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3575,9 +3575,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbcccd68b2d7f3b49a594d46a67acb95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spawnTimer: 20
+  spawnTimer: 40
   nb_frames: 3
-  cameraPrefab: {fileID: 1864389623277002904, guid: ad7fa06a3017d824c81cc1288e9d19bc, type: 3}
+  cameraPrefab: {fileID: 1864389623277002904, guid: 9f18484bfb9d01d4c8472e4035933da7, type: 3}
   cubePrefab: {fileID: 4458301911101641532, guid: d929abd0be96dec40b313c945e3ed2e8, type: 3}
   wallPrefab: {fileID: 6859485909347316049, guid: 6dd656e83751f2e4ea3b141ca33e61be, type: 3}
   porteIFMS: {fileID: 6286098589619147119, guid: 1377f72789ef116499288a656750904d, type: 3}
@@ -11459,6 +11459,7 @@ GameObject:
   - component: {fileID: 1964602102}
   - component: {fileID: 1964602103}
   - component: {fileID: 1964602104}
+  - component: {fileID: 1964602105}
   m_Layer: 0
   m_Name: GazeDetector
   m_TagString: Untagged
@@ -11488,6 +11489,7 @@ MonoBehaviour:
   maxInterval: 20
   filterSound: {fileID: 8300000, guid: 6f50322affbe90c4e8d1121de7a4d453, type: 3}
   secondarySound: {fileID: 8300000, guid: 6ce1767fcee2f2d41877dcbf3a72835b, type: 3}
+  overlayMeshPrefab: {fileID: 2624113952487798113, guid: 65d60a8887772be46ac34cc7b1d76529, type: 3}
 --- !u!4 &1964602099
 Transform:
   m_ObjectHideFlags: 0
@@ -11593,6 +11595,23 @@ MonoBehaviour:
   gazeTimeRequired: 5
   cooldownTime: 10
   firstSound: {fileID: 8300000, guid: 7a0e30a4df8b4b64aa85dcab9dca8559, type: 3}
+  secondSound: {fileID: 8300000, guid: 9d59bec27c372244cbaaff32dc3fdb7f, type: 3}
+--- !u!114 &1964602105
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1964602097}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b696e3e1721d934fb596162d7513c93, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetTag: window_spots
+  gazeTimeRequired: 2
+  cooldownTime: 8
+  firstSound: {fileID: 8300000, guid: 445b68cb90690a045be360e910cfe931, type: 3}
   secondSound: {fileID: 8300000, guid: 9d59bec27c372244cbaaff32dc3fdb7f, type: 3}
 --- !u!1 &1964672168
 GameObject:

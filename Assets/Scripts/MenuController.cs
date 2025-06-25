@@ -1,4 +1,5 @@
 using Meta.WitAi;
+using Meta.XR.ImmersiveDebugger.UserInterface;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -23,7 +24,7 @@ public class MenuController : MonoBehaviour
 
     public void ToggleSpawnFootball(bool value)
     {
-        SpawnThings.spawnFootball = value;
+        BabySpawner.spawnFootball = value;
     }
 
     public void ToggleSpawnBoardGames(bool value)
@@ -72,5 +73,13 @@ public class MenuController : MonoBehaviour
     public void ToggleCafeAmbient(bool value)
     {
         Radio.ambianceCafe = value;
+    }
+    public void ToggleGlass(bool value)
+    {
+        GlassSpawner.glass = value;
+    }
+    public void ToggleSpots(bool value)
+    { 
+        SpawnThings.spawnWindowSpots = value;
     }
 }

@@ -594,7 +594,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Verre
+  m_Text: "T\xE2che fen\xEAtre"
 --- !u!222 &57283186
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -789,7 +789,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1702647936}
         m_TargetAssemblyTypeName: MenuController, Assembly-CSharp
-        m_MethodName: ToggleMenuSpawn
+        m_MethodName: ToggleSpots
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3334,7 +3334,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1702647936}
         m_TargetAssemblyTypeName: MenuController, Assembly-CSharp
-        m_MethodName: ToggleMenuSpawn
+        m_MethodName: ToggleGlass
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

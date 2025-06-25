@@ -20,6 +20,7 @@ public class SpawnThings : MonoBehaviour
     public static bool spawnDoorNoises = true;
     public static bool spawnCubes = true;
     public static bool spawnMenu = true; // Pour le script SpiderSpawner
+    public static bool spawnWindowSpots = true; // Pour le script SpawnWindowSpots
 
     // --- Variables internes ---
     private List<Collider> alreadySpawnedColliders = new List<Collider>();
@@ -145,7 +146,7 @@ public class SpawnThings : MonoBehaviour
                 {
                     rb = cubeGO.AddComponent<Rigidbody>();
                 }
-                rb.isKinematic = true;
+                rb.isKinematic = true; 
                 rb.useGravity = false;
             }
 
@@ -155,12 +156,14 @@ public class SpawnThings : MonoBehaviour
 
             // Safe to spawn now
 
-            SpawnWindowSpots();
+            if (spawnWindowSpots)
+                SpawnWindowSpots();
 
             if (spawnWallDecoration)
                 SpawnWallDecoration();
 
-            SpawnMenu();
+            if (spawnMenu)
+                SpawnMenu();
 
             if (spawnPorteIFMS)
                 SpawnDoor();
