@@ -13,6 +13,7 @@ TagManager:
   - window_spots
   - Games
   - camera
+  - book
   layers:
   - Default
   - TransparentFX
