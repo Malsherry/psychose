@@ -2263,7 +2263,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 345387469}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 23d349c34100fe94b9b4fa10ca2fced5, type: 3}
   m_Name: 
@@ -3424,7 +3424,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 508054980}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 13cd8542ddac5af4389b852abaf7f6c5, type: 3}
   m_Name: 
@@ -11556,7 +11556,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetTag: Menu
-  gazeTimeRequired: 4
+  gazeTimeRequired: 2
   cooldownTime: 10
   primarySounds:
   - {fileID: 8300000, guid: 25455ba8fb952504682e88962a0611bf, type: 3}
@@ -11571,13 +11571,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1964602097}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 29eaf9427eacf814ea3e41f3354cf610, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   targetTag: glass
-  gazeTimeRequired: 2
+  gazeTimeRequired: 1
   delayBeforeAnimation: 5
   cooldownTime: 15
   animationName: Armature|ArmatureAction
@@ -11595,7 +11595,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetTag: Games
-  gazeTimeRequired: 5
+  gazeTimeRequired: 2
   cooldownTime: 10
   firstSound: {fileID: 8300000, guid: 71f97248b8618a844a2602746ae7056b, type: 3}
   secondSound: {fileID: 8300000, guid: 0f3a0aac1411cd44fbf65c8ee13ce35b, type: 3}
@@ -11612,7 +11612,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetTag: camera
-  gazeTimeRequired: 5
+  gazeTimeRequired: 2
   cooldownTime: 10
   firstSound: {fileID: 8300000, guid: 7a0e30a4df8b4b64aa85dcab9dca8559, type: 3}
   secondSound: {fileID: 8300000, guid: 9d59bec27c372244cbaaff32dc3fdb7f, type: 3}
@@ -11632,7 +11632,7 @@ MonoBehaviour:
   gazeTimeRequired: 2
   cooldownTime: 8
   firstSound: {fileID: 8300000, guid: 445b68cb90690a045be360e910cfe931, type: 3}
-  secondSound: {fileID: 8300000, guid: 9d59bec27c372244cbaaff32dc3fdb7f, type: 3}
+  secondSound: {fileID: 8300000, guid: e618c4b1c34f4c24cb778eeb5f8c9d2b, type: 3}
 --- !u!114 &1964602106
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11650,7 +11650,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   gazeTimeRequired: 1
-  cooldownPerTarget: 6
+  cooldownPerTarget: 5
 --- !u!82 &1964602107
 AudioSource:
   m_ObjectHideFlags: 0

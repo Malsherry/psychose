@@ -88,7 +88,7 @@ public class GazeTriggerShadowSounds : MonoBehaviour
         }
         else
         {
-            yield return new WaitForSeconds(3f); // Still wait 3s if no first sound
+            yield return new WaitForSeconds(0.5f); // Still wait 3s if no first sound
         }
 
         if (secondSound != null)

@@ -251,7 +251,7 @@ public class SpawnThings : MonoBehaviour
     }
 
 
-    public bool drawWallGizmo = true;
+    public bool drawWallGizmo = false;
     public static bool avoidSpawnWallDecoration = true;
     public int maxWallAttempts = 15;
 
@@ -329,11 +329,11 @@ public class SpawnThings : MonoBehaviour
 
 #if UNITY_EDITOR
             // Optional Gizmo Debug
-            var gizmoGO = new GameObject($"SpawnBoxGizmo_{attempt + 1}_{prefab.name}");
-            var gizmo = gizmoGO.AddComponent<GizmoDebugSpawnBox>();
-            gizmo.worldCenter = worldCenter;
-            gizmo.worldHalfExtents = worldHalfExtents == Vector3.zero ? Vector3.one * 0.1f : worldHalfExtents;
-            gizmo.rotation = rotation;
+            //var gizmoGO = new GameObject($"SpawnBoxGizmo_{attempt + 1}_{prefab.name}");
+            //var gizmo = gizmoGO.AddComponent<GizmoDebugSpawnBox>();
+            //gizmo.worldCenter = worldCenter;
+            //gizmo.worldHalfExtents = worldHalfExtents == Vector3.zero ? Vector3.one * 0.1f : worldHalfExtents;
+            //gizmo.rotation = rotation;
 #endif
 
             // Check for overlap with avoid-tag objects or disallowed anchor labels
