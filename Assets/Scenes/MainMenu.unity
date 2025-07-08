@@ -1453,7 +1453,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "Ambiance caf\xE9"
+  m_Text: Discussions
 --- !u!222 &185843629
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3278,7 +3278,7 @@ RectTransform:
   m_Children:
   - {fileID: 1622007620}
   - {fileID: 1459968532}
-  m_Father: {fileID: 1239676460}
+  m_Father: {fileID: 1838070162}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -10600,7 +10600,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "Elements li\xE9s au bistrot"
+  m_Text: Elements sur les murs
 --- !u!222 &1200764290
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -10804,7 +10804,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "Elements li\xE9s au soin"
+  m_Text: "Elements pr\xE9sents"
 --- !u!222 &1217065516
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -11027,7 +11027,7 @@ RectTransform:
   m_Children:
   - {fileID: 602277457}
   - {fileID: 1711082261}
-  m_Father: {fileID: 1838070162}
+  m_Father: {fileID: 1239676460}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -11127,8 +11127,8 @@ RectTransform:
   - {fileID: 965454132}
   - {fileID: 752588922}
   - {fileID: 907171099}
-  - {fileID: 439677189}
   - {fileID: 78629252}
+  - {fileID: 1239267413}
   m_Father: {fileID: 1702647934}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
@@ -16425,12 +16425,12 @@ RectTransform:
   m_Children:
   - {fileID: 277035348}
   - {fileID: 1995070228}
-  - {fileID: 1239267413}
   - {fileID: 625603348}
   - {fileID: 1267419248}
   - {fileID: 1023637568}
   - {fileID: 937638274}
   - {fileID: 798102303}
+  - {fileID: 439677189}
   m_Father: {fileID: 1702647934}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}

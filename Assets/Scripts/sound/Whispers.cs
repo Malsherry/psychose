@@ -103,13 +103,26 @@ public class Whispers : MonoBehaviour
 
     private IEnumerator UpdateVolumeAndPan()
     {
+        float currentVolume = baseVolume;
+        float fadeDuration = 1.5f;
+        float minVolumeFactor = 0.2f;
+
         while (true)
         {
-            audioSource.volume = Mathf.MoveTowards(audioSource.volume, targetVolume, volumeChangeSpeed * Time.deltaTime);
+            bool isSuppressed = SoundManager.Instance != null && SoundManager.Instance.IsPrioritySoundPlaying;
+
+            float target = isSuppressed
+                ? targetVolume * minVolumeFactor
+                : targetVolume;
+
+            currentVolume = Mathf.MoveTowards(currentVolume, target, (volumeChangeSpeed / fadeDuration) * Time.deltaTime);
+            audioSource.volume = currentVolume;
+
             audioSource.panStereo = Mathf.MoveTowards(audioSource.panStereo, targetPan, panChangeSpeed * Time.deltaTime);
 
-            if (Mathf.Abs(audioSource.volume - targetVolume) < 0.01f &&
-                Mathf.Abs(audioSource.panStereo - targetPan) < 0.01f)
+            if (Mathf.Abs(currentVolume - target) < 0.01f &&
+                Mathf.Abs(audioSource.panStereo - targetPan) < 0.01f &&
+                !isSuppressed)
             {
                 SetNewTargets();
             }
@@ -117,4 +130,5 @@ public class Whispers : MonoBehaviour
             yield return null;
         }
     }
+
 }

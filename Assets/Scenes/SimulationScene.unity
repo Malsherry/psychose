@@ -3345,7 +3345,6 @@ GameObject:
   - component: {fileID: 508054982}
   - component: {fileID: 508054985}
   - component: {fileID: 508054984}
-  - component: {fileID: 508054986}
   - component: {fileID: 508054987}
   - component: {fileID: 508054988}
   m_Layer: 0
@@ -3417,22 +3416,6 @@ MonoBehaviour:
   lastGizmoHalfExtents: {x: 0, y: 0, z: 0}
   lastGizmoRotation: {x: 0, y: 0, z: 0, w: 0}
   lastGizmoOverlap: 0
---- !u!114 &508054986
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 508054980}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 13cd8542ddac5af4389b852abaf7f6c5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  glassPrefab: {fileID: 7378632723343522919, guid: 95bce4fb60cd95441b50d9f99504e6c6, type: 3}
-  spawnLabelsTable: 8
-  glassSound: {fileID: 8300000, guid: 6b3afeb89af1bba42a17f60aaa2eef5f, type: 3}
-  soundVolume: 0.8
 --- !u!82 &508054987
 AudioSource:
   m_ObjectHideFlags: 0
@@ -11612,7 +11595,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetTag: camera
-  gazeTimeRequired: 2
+  gazeTimeRequired: 1
   cooldownTime: 10
   firstSound: {fileID: 8300000, guid: 7a0e30a4df8b4b64aa85dcab9dca8559, type: 3}
   secondSound: {fileID: 8300000, guid: 9d59bec27c372244cbaaff32dc3fdb7f, type: 3}

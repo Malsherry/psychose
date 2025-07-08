@@ -1,4 +1,6 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.Audio;
 
 public class GazeTriggerFrameAnimation : MonoBehaviour
 {
@@ -108,8 +110,19 @@ public class GazeTriggerFrameAnimation : MonoBehaviour
         tempSource.minDistance = 1f;
         tempSource.maxDistance = 15f;
         tempSource.rolloffMode = AudioRolloffMode.Linear;
+        SoundManager.Instance?.RegisterPrioritySoundStart();
 
         tempSource.Play();
+        StartCoroutine(EndSoundAfter(tempSource.clip.length));
+
         Destroy(tempSource, clip.length + 0.1f); // Clean up
     }
+    // Quand tu joues un son prioritaire
+
+    private IEnumerator EndSoundAfter(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        SoundManager.Instance?.RegisterPrioritySoundEnd();
+    }
+
 }

@@ -1,5 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Collections;
+using UnityEngine.Audio;
 
 public class GazeTriggerPlayMeshAudio : MonoBehaviour
 {
@@ -71,13 +73,21 @@ public class GazeTriggerPlayMeshAudio : MonoBehaviour
         currentTarget = null;
         gazeTimer = 0f;
     }
+    private IEnumerator EndSoundAfter(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        SoundManager.Instance?.RegisterPrioritySoundEnd();
+    }
 
     private void PlayAudioFromTarget(Transform target)
     {
         AudioSource audio = target.GetComponent<AudioSource>();
         if (audio != null && !audio.isPlaying)
         {
+            SoundManager.Instance?.RegisterPrioritySoundStart();
             audio.Play();
+            StartCoroutine(EndSoundAfter(audio.clip.length));
+
             Debug.Log("Audio played on: " + target.name);
         }
         else if (audio == null)
@@ -86,3 +96,5 @@ public class GazeTriggerPlayMeshAudio : MonoBehaviour
         }
     }
 }
+// Quand tu joues un son prioritaire
+

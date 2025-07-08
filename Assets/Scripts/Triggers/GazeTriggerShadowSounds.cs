@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.Audio;
 
 public class GazeTriggerShadowSounds : MonoBehaviour
 {
@@ -84,31 +85,74 @@ public class GazeTriggerShadowSounds : MonoBehaviour
         if (firstSound != null)
         {
             float firstSoundDuration = PlaySound(target, firstSound);
-            yield return new WaitForSeconds(firstSoundDuration + 1f); // Wait for first sound + 3s delay
+            StartCoroutine(PulseMaterial(target)); // Démarre la pulsation
+            yield return new WaitForSeconds(firstSoundDuration + 1f);
         }
         else
         {
-            yield return new WaitForSeconds(0.5f); // Still wait 3s if no first sound
+            StartCoroutine(PulseMaterial(target)); // Même sans son, on pulse
+            yield return new WaitForSeconds(0.5f);
         }
 
         if (secondSound != null)
         {
             PlaySound(target, secondSound);
         }
-    }
+        // Quand tu joues un son prioritaire
+
+
+}
 
     private float PlaySound(Transform target, AudioClip clip)
     {
         AudioSource tempSource = target.gameObject.AddComponent<AudioSource>();
         tempSource.clip = clip;
-        tempSource.spatialBlend = 1.0f; // 3D sound
+        tempSource.spatialBlend = 1.0f;
         tempSource.minDistance = 1f;
         tempSource.maxDistance = 15f;
         tempSource.rolloffMode = AudioRolloffMode.Linear;
 
+        SoundManager.Instance?.RegisterPrioritySoundStart();
         tempSource.Play();
-        Destroy(tempSource, clip.length + 0.1f); // Cleanup
+        StartCoroutine(EndSoundAfter(tempSource.clip.length));
+
+        Destroy(tempSource, clip.length + 0.1f);
 
         return clip.length;
     }
+    private IEnumerator EndSoundAfter(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        SoundManager.Instance?.RegisterPrioritySoundEnd();
+    }
+
+    private IEnumerator PulseMaterial(Transform target)
+    {
+        Debug.Log("Starting material pulse on: " + target.name);
+        Renderer targetRenderer = target.GetComponentInChildren<Renderer>();
+        if (targetRenderer == null || targetRenderer.material == null)
+            yield break;
+
+        Material mat = targetRenderer.material;
+        Color originalColor = mat.color;
+        Debug.Log("pulse Original color: " + originalColor);
+
+        float duration = 20f;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            float intensity = Mathf.Lerp(0.4f, 1f, Mathf.PingPong(Time.time * 1f, 1f));
+            Color newColor = originalColor * intensity;
+            
+
+            mat.color = newColor;
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        mat.color = originalColor;
+    }
+
 }

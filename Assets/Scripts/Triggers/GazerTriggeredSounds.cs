@@ -1,4 +1,6 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.Audio;
 
 public class GazeTriggeredSounds : MonoBehaviour
 {
@@ -80,6 +82,11 @@ public class GazeTriggeredSounds : MonoBehaviour
             }
         }
     }
+    private IEnumerator EndSoundAfter(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        SoundManager.Instance?.RegisterPrioritySoundEnd();
+    }
 
     private void ResetGaze()
     {
@@ -114,8 +121,17 @@ public class GazeTriggeredSounds : MonoBehaviour
         tempSource.minDistance = 1f;
         tempSource.maxDistance = 15f;
         tempSource.rolloffMode = AudioRolloffMode.Linear;
+        SoundManager.Instance?.RegisterPrioritySoundStart();
+
         tempSource.Play();
+        StartCoroutine(EndSoundAfter(tempSource.clip.length));
 
         Destroy(tempSource, clip.length + 0.1f);
     }
+
+    // Quand tu joues un son prioritaire
+
+      
+
+
 }

@@ -84,7 +84,12 @@ public class ViewFilters : MonoBehaviour
         audioSource.playOnAwake = false;
         audioSource.spatialBlend = 0f; // Son 2D (non spatial)
         audioSource.volume = 0f; // Commence silencieux
+        SoundManager.Instance?.RegisterPrioritySoundStart();
         audioSource.Play();
+        // Quand tu joues un son prioritaire
+        StartCoroutine(EndSoundAfter(audioSource.clip.length));
+
+
 
 
         secondaryAudioSource = filterPlane.AddComponent<AudioSource>();
@@ -100,7 +105,11 @@ public class ViewFilters : MonoBehaviour
         // Démarrer le cycle des filtres
         //StartCoroutine(FilterCycle());
     }
-
+    private IEnumerator EndSoundAfter(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        SoundManager.Instance?.RegisterPrioritySoundEnd();
+    }
     private void UpdateFilterSize()
     {
         float height = 2.0f * distanceFromCamera * Mathf.Tan(mainCamera.fieldOfView * 0.5f * Mathf.Deg2Rad);
