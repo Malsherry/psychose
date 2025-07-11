@@ -1,6 +1,7 @@
 # Simulateur d'Hallucinations en Réalité Augmentée
 
 Ce projet propose une expérience immersive et interactive de **simulation d'hallucinations** en **réalité augmentée (AR)**, à destination des **étudiants en soins infirmiers**. Il vise à sensibiliser aux troubles psychotiques, en reproduisant **hallucinations visuelles et auditives** réalistes, contextualisées dans un environnement réel.
+Il est situé dans la branche "develop"
 
 ##  Objectifs pédagogiques
 
